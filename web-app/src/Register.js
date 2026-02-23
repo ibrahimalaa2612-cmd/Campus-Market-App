@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { auth, db } from './firebase'; // التعديل هنا: اسم ملفك firebase.js
+import { auth, db } from './firebase';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import './Auth.css';
 
-function Register(props) { // لازم (props) هنا
+function Register({ onBack, onSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -13,27 +14,47 @@ function Register(props) { // لازم (props) هنا
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await setDoc(doc(db, "users", userCredential.user.uid), {
-        name, email, createdAt: new Date()
+        name,
+        email,
+        createdAt: new Date()
       });
-      alert("تم إنشاء الحساب بنجاح!");
+      if (onSuccess) onSuccess(); // بعد التسجيل
     } catch (error) {
       alert(error.message);
     }
   };
 
   return (
-    <div className="register-container" style={{ textAlign: 'center', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', width: '350px' }}>
-      <h2>إنشاء حساب جديد</h2>
-      <form onSubmit={handleRegister}>
-        <input type="text" placeholder="الاسم الكامل" onChange={(e) => setName(e.target.value)} required style={{ width: '90%', padding: '10px', marginBottom: '10px' }} />
-        <input type="email" placeholder="الإيميل" onChange={(e) => setEmail(e.target.value)} required style={{ width: '90%', padding: '10px', marginBottom: '10px' }} />
-        <input type="password" placeholder="الباسورد" onChange={(e) => setPassword(e.target.value)} required style={{ width: '90%', padding: '10px', marginBottom: '10px' }} />
-        <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#42b72a', color: 'white', border: 'none', borderRadius: '6px' }}>سجل الآن</button>
-      </form>
-      <hr style={{ margin: '20px 0' }} />
-      <button type="button" onClick={props.onBack} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
-        لديك حساب بالفعل؟ سجل دخولك
-      </button>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>إنشاء حساب جديد</h2>
+        <form onSubmit={handleRegister}>
+          <input
+            type="text"
+            placeholder="الاسم الكامل"
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <input
+            type="email"
+            placeholder="الإيميل الجامعي"
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="كلمة السر"
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit" className="primary">سجل الآن</button>
+        </form>
+
+        <p>لديك حساب بالفعل؟</p>
+        <button type="button" className="secondary" onClick={onBack}>
+          تسجيل دخول
+        </button>
+      </div>
     </div>
   );
 }
