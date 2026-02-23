@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router'; // استدعاء الموجه الخاص بـ Expo
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter(); // تعريف الـ router داخل المكون
 
   return (
     <View style={styles.container}>
@@ -28,6 +30,14 @@ export default function LoginScreen() {
 
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>دخول</Text>
+        </TouchableOpacity>
+
+        {/* زرار إنشاء حساب جديد للتبديل بين الصفحات */}
+        <TouchableOpacity 
+          style={[styles.button, { backgroundColor: '#2ecc71', marginTop: 20 }]} 
+          onPress={() => router.push('/Register')} // التوجه لملف Register.tsx
+        >
+          <Text style={styles.buttonText}>إنشاء حساب جديد</Text>
         </TouchableOpacity>
 
         <Text style={styles.errorMsg}>خطأ في الإيميل أو كلمة السر</Text>
