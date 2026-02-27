@@ -1,0 +1,136 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Container */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1f2937, #111827); /* خلفية داكنة مع gradient */
+}
+
+/* Card */
+.auth-card {
+  background-color: #1e293b; /* داكن جدا */
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  width: 100%;
+  max-width: 400px;
+  color: #fff;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-5px);
+}
+
+.auth-card h2 {
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+  color: #10b981; /* لون أخضر متناسق مع Navbar */
+}
+
+/* Forms */
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.auth-card input,
+.auth-card textarea,
+.auth-card select {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #374151; /* خط داكن */
+  background-color: #111827; /* خلفية داخل الحقل */
+  color: #fff;
+  font-size: 0.95rem;
+  transition: border 0.3s ease, background 0.3s ease;
+}
+
+.auth-card input:focus,
+.auth-card textarea:focus,
+.auth-card select:focus {
+  outline: none;
+  border-color: #10b981; /* أخضر عند التركيز */
+  background-color: #1f2937;
+}
+
+.auth-card textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Buttons */
+.auth-card button {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+button.primary {
+  background-color: #10b981; /* أخضر */
+  color: #111827;
+}
+
+button.primary:hover {
+  background-color: #059669;
+  transform: scale(1.03);
+}
+
+button.secondary {
+  background-color: #2563eb; /* أزرق */
+  color: #fff;
+}
+
+button.secondary:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.03);
+}
+
+/* Error message */
+.error-msg {
+  color: #ef4444; /* أحمر */
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+/* Links */
+.auth-card p {
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
+.auth-card a {
+  color: #10b981;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.auth-card a:hover {
+  color: #059669;
+}
+
+/* Responsive */
+@media screen and (max-width: 480px) {
+  .auth-card {
+    padding: 30px 20px;
+  }
+  .auth-card h2 {
+    font-size: 1.5rem;
+  }
+}
