@@ -25,15 +25,21 @@
 }
 
 .navbar-logo {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #fff;
+  display: flex;
+  align-items: center;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
-.navbar-logo:hover {
-  color: #10b981;
+.navbar-logo img {
+  width: 120px;       
+  height: auto;    
+  object-fit: contain; 
+  transition: transform 0.3s ease;
+}
+
+.navbar-logo:hover img {
+  transform: scale(1.05);
 }
 
 .navbar-links {
@@ -80,14 +86,13 @@
   top: 50px;
   background-color: #111827;
   border-radius: 8px;
-  overflow: hidden;
-  width: 160px;
+  width: 180px;
   opacity: 0;
   pointer-events: none;
   transform: translateY(-10px);
   transition: all 0.3s ease;
   box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  z-index: 999;
+  z-index: 1000;
 }
 
 .dropdown-menu.open {
@@ -129,9 +134,11 @@
 @media screen and (max-width: 768px) {
   .navbar-links {
     gap: 10px;
+    flex-wrap: wrap;
   }
 
-  .navbar-logo {
-    font-size: 1.5rem;
+  .navbar-logo img {
+    width: 50px;
+    height: 50px;
   }
 }
