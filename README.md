@@ -1,21 +1,30 @@
-<<<<<<< HEAD
-# React + Vite
+# Campus Market App 🎓🛒
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack campus marketplace for students to buy and sell used books, tools, and services within the university community.
 
-Currently, two official plugins are available:
+##  Tech Stack
+* **Frontend (Web):** React.js + Vite
+* **Mobile (App):** React Native / Expo
+* **Backend:** Firebase (Authentication & Firestore)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠 Features (In Progress)
+- [x] User Registration (Web & Mobile)
+- [x] Firestore Integration
+- [ ] User Login
+- [ ] Item Listing & Marketplace
+- [ ] User Profiles
 
-## React Compiler
+## 📦 Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### For Web:
+1. `cd web-app`
+2. `npm install`
+3. `npm start`
 
-## Expanding the ESLint configuration
+### For Mobile:
+1. `cd mobile-app`
+2. `npm install`
+3. `npx expo start`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# Campus-Market-App
-A full-stack campus marketplace for students to buy and sell used books and tools.
->>>>>>> 17bbd6cada5f34f28034dfcc96e0bf35c0d6031b
+---
+*Project part of the Digital Egypt Pioneers Initiative.*
