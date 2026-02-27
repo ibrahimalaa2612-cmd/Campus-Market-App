@@ -1,37 +1,29 @@
-/* Container كامل */
-.container {
+.App {
   background-color: #f4f7f6;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding: 10px;
-  box-sizing: border-box;
 }
 
-/* الصندوق الأبيض */
-.profileCard {
+.login-container {
   background: white;
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.1);
   width: 100%;
-  max-width: 450px;
+  max-width: 400px;
   text-align: center;
 }
 
-/* العنوان */
-.profileCard h2 {
+h2 {
   color: #2c3e50;
   margin-bottom: 25px;
   font-size: 24px;
 }
 
-/* الحقول */
-.profileCard input,
-.profileCard select,
-.profileCard textarea {
+input {
   width: 100%;
   padding: 12px;
   margin-bottom: 15px;
@@ -42,33 +34,28 @@
   transition: border-color 0.3s;
 }
 
-.profileCard input:focus,
-.profileCard select:focus,
-.profileCard textarea:focus {
+input:focus {
   border-color: #3498db;
 }
 
-/* زرار الحفظ */
-.profileCard button {
+button {
   width: 100%;
   padding: 12px;
-  background-color: #42b72a;
+  background-color: #3498db;
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
-  margin-top: 10px;
-  transition: opacity 0.3s;
+  transition: background-color 0.3s;
 }
 
-.profileCard button:hover {
-  opacity: 0.9;
+button:hover {
+  background-color: #2980b9;
 }
 
-/* رسالة الخطأ */
-.errorMsg {
+.error-msg {
   color: #e74c3c;
-  margin-top: 10px;
+  margin-top: 15px;
   font-size: 14px;
 }

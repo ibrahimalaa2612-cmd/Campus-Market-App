@@ -1,0 +1,138 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+.container {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #1f2937, #111827);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.profile-header h2 {
+  font-size: 2rem;
+  color: #10b981;
+  margin-bottom: 10px;
+}
+
+.profile-header p {
+  color: #d1d5db;
+  font-size: 1rem;
+}
+
+.profile-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #10b981;
+  margin-bottom: 20px;
+}
+
+.profile-edit-form {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.profile-edit-form label {
+  color: #d1d5db;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.profile-edit-form input,
+.profile-edit-form textarea,
+.profile-edit-form select {
+  width: 100%;
+  padding: 14px 15px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background-color: #1e293b;
+  color: #fff;
+  font-size: 1rem;
+  transition: border 0.3s ease, background 0.3s ease;
+}
+
+.profile-edit-form input:focus,
+.profile-edit-form textarea:focus,
+.profile-edit-form select:focus {
+  outline: none;
+  border-color: #10b981;
+  background-color: #111827;
+}
+
+.profile-edit-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.profile-edit-form button {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+button.primary {
+  background-color: #10b981;
+  color: #111827;
+}
+
+button.primary:hover {
+  background-color: #059669;
+  transform: scale(1.02);
+}
+
+.errorMsg {
+  color: #ef4444;
+}
+
+.successMsg {
+  color: #10b981;
+}
+
+.progressContainer {
+  background: #374151;
+  border-radius: 8px;
+  height: 20px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background-color: #10b981;
+  text-align: center;
+  color: #111827;
+  line-height: 20px;
+  font-size: 14px;
+  transition: width 0.3s ease;
+}
+
+@media screen and (max-width: 480px) {
+  .profile-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .profile-edit-form input,
+  .profile-edit-form textarea,
+  .profile-edit-form select {
+    font-size: 0.95rem;
+  }
+}

@@ -1,36 +1,73 @@
-import React, { useState } from 'react';
-import Login from './Login';
-import Register from './Register';
-import CompleteProfile from './CompleteProfile';
-import Home from './Home';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import CompleteProfile from "./pages/CompleteProfile";
+import Sell from "./pages/Sell";
+import Orders from "./pages/Orders";
+import Cart from "./pages/Cart";
+import { AuthProvider } from "./context/AuthContext";
+import PrivateRouteComplete from "./components/PrivateRouteComplete";
 
 function App() {
-  const [view, setView] = useState('login');
-
   return (
-    <div className="App" style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
-      {view === 'login' && (
-        <Login 
-          onSwitch={() => setView('register')}
-          onSuccess={() => setView('complete')}
-        />
-      )}
+    <AuthProvider>
+      <Router>
+        <Navbar /> {/* Navbar موجودة طول الوقت */}
+        <Routes>
+          {/* صفحات عامة */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/complete" element={<CompleteProfile />} />
 
-      {view === 'register' && (
-        <Register
-          onBack={() => setView('login')}
-          onSuccess={() => setView('complete')}
-        />
-      )}
+          {/* الصفحة الرئيسية */}
+          <Route
+            path="/"
+            element={
+              <PrivateRouteComplete>
+                <Home />
+              </PrivateRouteComplete>
+            }
+          />
 
-      {view === 'complete' && (
-        <CompleteProfile 
-          onSuccess={() => setView('home')}
-        />
-      )}
-
-      {view === 'home' && <Home />}
-    </div>
+          {/* صفحات محمية */}
+          <Route
+            path="/profile"
+            element={
+              <PrivateRouteComplete>
+                <Profile />
+              </PrivateRouteComplete>
+            }
+          />
+          <Route
+            path="/sell"
+            element={
+              <PrivateRouteComplete>
+                <Sell />
+              </PrivateRouteComplete>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <PrivateRouteComplete>
+                <Orders />
+              </PrivateRouteComplete>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <PrivateRouteComplete>
+                <Cart />
+              </PrivateRouteComplete>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
