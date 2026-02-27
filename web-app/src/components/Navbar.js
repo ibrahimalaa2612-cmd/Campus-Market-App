@@ -31,7 +31,14 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">Campus Market</Link>
+        {/* Logo */}
+        <Link to="/" className="navbar-logo">
+          <img
+            src="/logo-campus-market.png"
+            alt="Campus Market Logo"
+            className="logo-img"
+          />
+        </Link>
 
         <div className="navbar-links">
           <Link to="/" className="nav-link">الرئيسية</Link>
