@@ -55,7 +55,7 @@ function CompleteProfile() {
       alert("تم حفظ الملف الشخصي بنجاح ✅");
 
       // 🔥 يرجع لصفحة تسجيل الدخول
-      navigate("/login", { replace: true });
+      navigate("/home", { replace: true });
 
     } catch (error) {
       console.error(error);
