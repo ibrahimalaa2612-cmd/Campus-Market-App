@@ -10,7 +10,6 @@ export default function CompleteProfile() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  // حالات البيانات
   const [fullName, setFullName] = useState("");
   const [university, setUniversity] = useState("");
   const [faculty, setFaculty] = useState("");
@@ -28,10 +27,19 @@ export default function CompleteProfile() {
   const facultiesByUniversity = {
     "جامعة القاهرة": ["الهندسة","التجارة","الطب","الصيدلة","القانون","العلوم","الآداب","التربية","علوم الحاسوب","الزراعة","التمريض"],
     "جامعة عين شمس": ["الهندسة","التجارة","الطب","الصيدلة","القانون","العلوم","الآداب","التربية"],
-    "جامعة الإسكندرية": ["الهندسة","التجارة","الطب","الصيدلة","القانون","العلوم","الآداب","التربية"]
+    "جامعة الإسكندرية": ["الهندسة","التجارة","الطب","الصيدلة","القانون","العلوم","الآداب","التربية"],
+    "جامعة حلوان": ["الهندسة","التجارة","الآداب","التربية","علوم الحاسوب"],
+    "جامعة المنصورة": ["الهندسة","الطب","الصيدلة","القانون","العلوم","الآداب"],
+    "جامعة أسيوط": ["الهندسة","الطب","القانون","العلوم","الآداب","التربية"],
+    "جامعة طنطا": ["الهندسة","الطب","القانون","العلوم","الآداب","التربية"],
+    "جامعة الزقازيق": ["الهندسة","الطب","القانون","العلوم","الآداب","التربية"],
+    "جامعة قناة السويس": ["الهندسة","الطب","القانون","العلوم","الآداب","التربية"],
+    "جامعة الفيوم": ["الهندسة","العلوم","الآداب","التربية"],
+    "جامعة بني سويف": ["الهندسة","الطب","القانون","العلوم","الآداب","التربية"],
+    "جامعة المنيا": ["الهندسة","الطب","القانون","العلوم","الآداب","التربية"],
+    "جامعة سوهاج": ["الهندسة","الطب","القانون","العلوم","الآداب","التربية"]
   };
 
-  // تحميل بيانات الملف الشخصي بعد ما user متعرف
   useEffect(() => {
     if (!user) return;
 
@@ -58,7 +66,6 @@ export default function CompleteProfile() {
     loadProfile();
   }, [user]);
 
-  // Loading spinner أثناء انتظار user
   if (loading) return <div className="loading">جاري التحقق من تسجيل الدخول...</div>;
   if (!user) return <div className="loading">يجب تسجيل الدخول أولاً</div>;
 
@@ -78,7 +85,6 @@ export default function CompleteProfile() {
 
     let finalImageUrl = imageUrl;
 
-    // رفع الصورة لو موجودة
     if (imageFile) {
       try {
         const storageRef = ref(storage, `profileImages/${user.uid}_${Date.now()}_${imageFile.name}`);
@@ -118,7 +124,7 @@ export default function CompleteProfile() {
 
       await setDoc(doc(db, "userProfiles", user.uid), userProfile, { merge: true });
 
-      navigate("/"); // بعد الحفظ يرجع للصفحة الرئيسية
+      navigate("/");
     } catch (err) {
       console.error(err);
       setErrorMsg("حدث خطأ أثناء حفظ البيانات");

@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-// البيانات دي هتاخدها من زميلك اللي بيظبط الفايربيز
 const firebaseConfig = {
   apiKey: "WAITING_FOR_DATA", 
   authDomain: "your-app.firebaseapp.com",

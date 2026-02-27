@@ -7,13 +7,13 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false); // ✅ جديد
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
-      setInitialized(true); // بعد تحديد user، نعلم أن auth جاهز
+      setInitialized(true);
     });
     return () => unsubscribe();
   }, []);

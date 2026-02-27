@@ -29,14 +29,14 @@ export default function Register() {
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
-      // حفظ role افتراضي
+      
       await setDoc(doc(db, "users", userCred.user.uid), {
         role: "user",
         email: email,
         createdAt: new Date()
       });
 
-      navigate("/complete"); // يروح يكمل بياناته
+      navigate("/complete"); 
     } catch (err) {
       setError("حدث خطأ أثناء إنشاء الحساب");
     }

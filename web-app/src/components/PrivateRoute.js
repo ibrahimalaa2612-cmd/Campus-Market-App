@@ -23,7 +23,7 @@ export default function PrivateRouteComplete({ children }) {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          // شرط اكتمال البيانات: الاسم + الجامعة + الكلية + رقم جامعي
+         
           if (data.fullName && data.university && data.faculty && data.studentId) {
             setProfileComplete(true);
           } else {

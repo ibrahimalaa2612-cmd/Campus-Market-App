@@ -5,7 +5,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
 export default function PrivateRouteComplete({ children }) {
-  const { user, loading, initialized } = useAuth(); // ✅ استخدم initialized
+  const { user, loading, initialized } = useAuth();
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileComplete, setProfileComplete] = useState(false);
 
@@ -39,12 +39,11 @@ export default function PrivateRouteComplete({ children }) {
       }
     };
 
-    if (initialized) { // ✅ نفحص فقط بعد انتهاء Firebase Auth
+    if (initialized) {
       checkProfile();
     }
   }, [user, initialized]);
 
-  // ننتظر حتى انتهاء Auth و Profile
   if (loading || !initialized || profileLoading) {
     return <div className="loading">جاري التحقق من تسجيل الدخول وملفك الشخصي...</div>;
   }

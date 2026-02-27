@@ -26,7 +26,7 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (loading) return null; // ممكن تحط spinner بدل null
+  if (loading) return null;
 
   return (
     <nav className="navbar">
@@ -34,7 +34,7 @@ export default function Navbar() {
         <Link to="/" className="navbar-logo">Campus Market</Link>
 
         <div className="navbar-links">
-          <Link to="/" className="nav-link">Home</Link>
+          <Link to="/" className="nav-link">الرئيسية</Link>
 
           {user ? (
             <>
