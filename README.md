@@ -3,7 +3,7 @@
 A full-stack campus marketplace for students to buy and sell used books, tools, and services within the university community.
 
 ##  Tech Stack
-* **Frontend (Web):** React.js + Vite
+* **Frontend (Web):** React.js + React Router DOM + CSS3 + Context API
 * **Mobile (App):** React Native / Expo
 * **Backend:** Firebase (Authentication & Firestore)
 
