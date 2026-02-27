@@ -1,8 +1,13 @@
+import React from "react";
+import "../styles/Home.css";
+
 export default function Home() {
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>مرحبا بك في Campus Market 🎓</h2>
-      <p>دي الصفحة الرئيسية بعد تسجيل الدخول.</p>
+    <div className="home-container">
+      <div className="home-card">
+        <h2>مرحبا بك في Campus Market 🎓</h2>
+        <p>الصفحة الرئيسية</p>
+      </div>
     </div>
   );
 }

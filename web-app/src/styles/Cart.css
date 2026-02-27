@@ -1,4 +1,3 @@
-/* Reset */
 * {
   margin: 0;
   padding: 0;
@@ -6,7 +5,7 @@
   font-family: "Poppins", sans-serif;
 }
 
-.home-container {
+.cart-container {
   min-height: 100vh;
   width: 100%;
   padding: 40px 20px;
@@ -16,7 +15,7 @@
   align-items: center;
 }
 
-.home-card {
+.cart-card {
   max-width: 600px;
   width: 100%;
   background-color: #1e293b;
@@ -28,32 +27,32 @@
   transition: transform 0.3s ease;
 }
 
-.home-card:hover {
+.cart-card:hover {
   transform: translateY(-5px);
 }
 
-.home-card h2 {
+.cart-card h1 {
   font-size: 2rem;
   color: #10b981;
   margin-bottom: 15px;
 }
 
-.home-card p {
+.cart-card p {
   font-size: 1.1rem;
   color: #d1d5db;
   line-height: 1.6;
 }
 
 @media screen and (max-width: 480px) {
-  .home-card {
+  .cart-card {
     padding: 30px 20px;
   }
 
-  .home-card h2 {
+  .cart-card h1 {
     font-size: 1.5rem;
   }
 
-  .home-card p {
+  .cart-card p {
     font-size: 1rem;
   }
 }
