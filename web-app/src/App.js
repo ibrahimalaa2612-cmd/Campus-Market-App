@@ -8,21 +8,21 @@ import CompleteProfile from "./pages/CompleteProfile";
 import Sell from "./pages/Sell";
 import Orders from "./pages/Orders";
 import Cart from "./pages/Cart";
+import ForgotPassword from "./pages/ForgotPassword";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRouteComplete from "./components/PrivateRouteComplete";
-
+import Settings from "./pages/Settings";
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Navbar /> {/* Navbar موجودة طول الوقت */}
+        <Navbar />
         <Routes>
-          {/* صفحات عامة */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/complete" element={<CompleteProfile />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* الصفحة الرئيسية */}
           <Route
             path="/"
             element={
@@ -32,7 +32,6 @@ function App() {
             }
           />
 
-          {/* صفحات محمية */}
           <Route
             path="/profile"
             element={
@@ -41,6 +40,16 @@ function App() {
               </PrivateRouteComplete>
             }
           />
+
+          <Route
+            path="/settings"
+            element={
+              <PrivateRouteComplete>
+                <Settings />
+              </PrivateRouteComplete>
+            }
+          />
+
           <Route
             path="/sell"
             element={
@@ -49,6 +58,7 @@ function App() {
               </PrivateRouteComplete>
             }
           />
+
           <Route
             path="/orders"
             element={
@@ -57,6 +67,7 @@ function App() {
               </PrivateRouteComplete>
             }
           />
+
           <Route
             path="/cart"
             element={

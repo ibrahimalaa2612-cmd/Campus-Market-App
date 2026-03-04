@@ -48,7 +48,13 @@ export default function Login() {
 
           {error && <p className="error-msg">{error}</p>}
 
-          <p style={{ marginTop: "15px" }}>
+          <p style={{ marginTop: "15px", textAlign: "center" }}>
+            <Link to="/forgot-password" style={{ color: "#3498db", textDecoration: "none", fontSize: "14px" }}>
+              نسيت كلمة السر؟
+            </Link>
+          </p>
+
+          <p style={{ marginTop: "15px", textAlign: "center" }}>
             ليس لديك حساب؟{" "}
             <Link to="/register">إنشاء حساب</Link>
           </p>
