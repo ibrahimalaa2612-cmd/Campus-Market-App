@@ -13,6 +13,7 @@ const AdminLogin = () => {
      e.preventDefault();
   setLoading(true);
   try {
+    // eslint-disable-next-line no-unused-vars
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     navigate("/admin/dashboard");
      } catch (error) {

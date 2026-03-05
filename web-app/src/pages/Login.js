@@ -11,14 +11,19 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
+  e.preventDefault();
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  
+    if (email === "admin@gmail.com") {
+      navigate("/admin/dashboard");
+    } else {
       navigate("/");
-    } catch (err) {
-      setError("بيانات الدخول غير صحيحة");
     }
-  };
+  } catch (err) {
+    setError("بيانات الدخول غير صحيحة");
+  }
+};
 
   return (
     <div className="auth-container">

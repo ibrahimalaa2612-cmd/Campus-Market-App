@@ -1,3 +1,5 @@
+import React from "react";
+import { Link } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
@@ -16,11 +18,16 @@ const AdminLayout = ({ children }) => {
         <h3>Admin Panel</h3>
         <p>Dashboard</p>
         <p>Users</p>
+       <li>
+          <Link to="/admin/products">Products</Link>
+       </li>
+
       </aside>
       <main style={{ flex: 1, padding: "20px" ,display:"flex",flexDirection:"column,",justifyContent:"center",alignItems:"center"}}>
-        <button onClick={handleLogout}>Logout</button>
+       {/* <button onClick={handleLogout}>Logout</button>*/}
         {children}
       </main>
+      
     </div>
   );
 };
