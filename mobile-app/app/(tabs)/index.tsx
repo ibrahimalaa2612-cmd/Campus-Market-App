@@ -1,42 +1,95 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import { auth } from '../../firebaseConfig';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, FlatList, Image, ActivityIndicator } from 'react-native';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db, auth } from '../../firebaseConfig';
 
 export default function Home() {
   const userEmail = auth.currentUser?.email || 'طالب';
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'products'), where('status', '==', 'approved'));
+      const querySnapshot = await getDocs(q);
+      const productsList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setProducts(productsList);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const renderProduct = ({ item }: { item: any }) => (
+    <View style={styles.productCard}>
+      {item.image ? (
+        <Image source={{ uri: item.image }} style={styles.productImage} />
+      ) : (
+        <View style={styles.noImageBox}>
+          <Text style={styles.noImageText}>بدون صورة</Text>
+        </View>
+      )}
+      <View style={styles.productInfo}>
+        <Text style={styles.productName}>{item.name}</Text>
+        <Text style={styles.productPrice}>{item.price} ج.م</Text>
+        {item.description && <Text style={styles.productDesc}>{item.description}</Text>}
+      </View>
+    </View>
+  );
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>مرحباً بك،</Text>
         <Text style={styles.subtitle}>{userEmail}</Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Campus Market</Text>
-        <Text style={styles.cardText}>المكان الأفضل لبيع وشراء كل ما تحتاجه في الجامعة بسهولة وأمان.</Text>
-      </View>
+      <Text style={styles.sectionTitle}>أحدث المنتجات</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>أحدث العروض</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#3498db" style={{ marginTop: 50 }} />
+      ) : products.length === 0 ? (
         <View style={styles.placeholderBox}>
-          <Text style={styles.placeholderText}>لا توجد عروض حالياً</Text>
+          <Text style={styles.placeholderText}>لا توجد منتجات حالياً</Text>
         </View>
-      </View>
-    </ScrollView>
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id}
+          renderItem={renderProduct}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          onRefresh={fetchProducts}
+          refreshing={loading}
+        />
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f4f7f6', padding: 20, paddingTop: 60 },
-  header: { marginBottom: 30, alignItems: 'flex-end' },
+  header: { marginBottom: 25, alignItems: 'flex-end' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#2c3e50' },
   subtitle: { fontSize: 16, color: '#7f8c8d', marginTop: 5 },
-  card: { backgroundColor: '#fff', padding: 20, borderRadius: 15, elevation: 3, marginBottom: 30 },
-  cardTitle: { fontSize: 22, fontWeight: 'bold', color: '#3498db', marginBottom: 10, textAlign: 'right' },
-  cardText: { fontSize: 15, color: '#555', lineHeight: 22, textAlign: 'right' },
-  section: { flex: 1 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#2c3e50', marginBottom: 15, textAlign: 'right' },
+  productCard: { backgroundColor: '#fff', borderRadius: 15, marginBottom: 15, overflow: 'hidden', elevation: 3, flexDirection: 'row', alignItems: 'center', padding: 10 },
+  productImage: { width: 90, height: 90, borderRadius: 10 },
+  noImageBox: { width: 90, height: 90, borderRadius: 10, backgroundColor: '#ecf0f1', justifyContent: 'center', alignItems: 'center' },
+  noImageText: { color: '#bdc3c7', fontSize: 12 },
+  productInfo: { flex: 1, alignItems: 'flex-end', paddingRight: 15 },
+  productName: { fontSize: 18, fontWeight: 'bold', color: '#2c3e50', marginBottom: 5 },
+  productPrice: { fontSize: 16, color: '#2ecc71', fontWeight: 'bold' },
+  productDesc: { fontSize: 13, color: '#95a5a6', marginTop: 4, textAlign: 'right' },
   placeholderBox: { height: 150, backgroundColor: '#eaecee', borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
   placeholderText: { color: '#bdc3c7', fontSize: 16 }
 });
