@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { auth, db } from "../firebase/firebase"; 
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 const AdminLogin = () => {
@@ -10,33 +11,60 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-     e.preventDefault();
-  setLoading(true);
-  try {
-    // eslint-disable-next-line no-unused-vars
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    navigate("/admin/dashboard");
-     } catch (error) {
-    alert("Login Failed");
-                     } finally {
-    setLoading(false);
-                   }
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const adminDoc = await getDoc(doc(db, "admins", user.email));
+
+      if (adminDoc.exists() && adminDoc.data().role === "admin") {
+        alert("مرحباً بك أيها المسؤول");
+        navigate("/admin/dashboard"); 
+      } else {
+        await auth.signOut();
+        alert("هذا الحساب ليس له صلاحيات دخول للإدارة");
+        navigate("/login");
+      }
+    } catch (error) {
+      alert("خطأ في البريد الإلكتروني أو كلمة المرور");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <h2>Admin Login</h2>
-      <form onSubmit={handleLogin}>
-        <input type="email" placeholder="Email" onChange={(e)=>setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" onChange={(e)=>setPassword(e.target.value)} />
-       <button type="submit" disabled={loading}>
-             {loading ? "Logging..." : "Login"}
-       </button>
+    <div style={{ padding: "50px", textAlign: "center", color: "#fff", direction: "rtl" }}>
+      <h2>تسجيل دخول لوحة التحكم</h2>
+      <form onSubmit={handleLogin} style={{ marginTop: "20px" }}>
+        <input 
+          type="email" 
+          placeholder="بريد الأدمن" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)} 
+          style={{ display: "block", margin: "10px auto", padding: "12px", width: "300px", borderRadius: "5px" }}
+          required
+        />
+        <input 
+          type="password" 
+          placeholder="كلمة المرور" 
+          value={password}
+          onChange={(e) => setPassword(e.target.value)} 
+          style={{ display: "block", margin: "10px auto", padding: "12px", width: "300px", borderRadius: "5px" }}
+          required
+        />
+        <button 
+          type="submit" 
+          disabled={loading} 
+          style={{ padding: "12px 40px", backgroundColor: "#2ecc71", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
+        >
+          {loading ? "جاري التحقق..." : "دخول الإدارة"}
+        </button>
       </form>
     </div>
   );
-
-  
 };
 
 export default AdminLogin;

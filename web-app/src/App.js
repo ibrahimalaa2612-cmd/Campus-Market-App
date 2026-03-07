@@ -12,7 +12,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Settings from "./pages/Settings";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRouteComplete from "./components/PrivateRouteComplete";
-import PrivateRouteAdmin from "./components/PrivateRouteAdmin";
+//import PrivateRouteAdmin from "./components/PrivateRouteAdmin";
 import Dashboard from "./pages/admin/Dashboard";
 import AddProductPage from "./pages/admin/AddProductPage";
 import ViewProductsPage from "./pages/admin/ViewProductsPage";
@@ -37,9 +37,10 @@ function App() {
           <Route path="/cart" element={<PrivateRouteComplete><Cart /></PrivateRouteComplete>} />
 
           {/* Admin Routes */}
-          <Route path="/admin/dashboard" element={<PrivateRouteAdmin><Dashboard /></PrivateRouteAdmin>} />
-          <Route path="/admin/add-product" element={<PrivateRouteAdmin><AddProductPage /></PrivateRouteAdmin>} />
-          <Route path="/admin/view-products" element={<PrivateRouteAdmin><ViewProductsPage /></PrivateRouteAdmin>} /> 
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/add-product" element={<AddProductPage />} />
+          <Route path="/admin/view-products" element={<ViewProductsPage />} />  
          {/* <Route path="/admin/add-product" element={<PrivateRouteAdmin><Products /></PrivateRouteAdmin>} />
           <Route path="/admin/view-products" element={<PrivateRouteAdmin><Products /></PrivateRouteAdmin>} />
          */}</Routes>
