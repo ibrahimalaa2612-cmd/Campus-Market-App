@@ -3,7 +3,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebaseConfig'; 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import 'react-native-reanimated';
 
@@ -15,7 +15,7 @@ export default function RootLayout() {
   const segments = useSegments();
 
   useEffect(() => {
-    const subscriber = onAuthStateChanged(auth, (user) => {
+    const subscriber = onAuthStateChanged(auth, (user: any) => {
       setUser(user);
       if (initializing) setInitializing(false);
     });
@@ -25,11 +25,12 @@ export default function RootLayout() {
   useEffect(() => {
     if (initializing) return;
 
-    const inTabsGroup = segments[0] === '(tabs)';
+    const currentSegment = segments[0] as string;
+    const inAuthGroup = currentSegment === 'login' || currentSegment === 'Register' || currentSegment === 'forgot-password';
 
-    if (!user && inTabsGroup) {
+    if (!user && !inAuthGroup) {
       router.replace('/login');
-    } else if (user && segments[0] !== '(tabs)') {
+    } else if (user && inAuthGroup) {
       router.replace('/(tabs)');
     }
   }, [user, initializing, segments]);
