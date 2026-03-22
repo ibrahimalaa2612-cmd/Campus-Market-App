@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import { useAuth } from "./context/AuthContext";
 
 // Pages
 import Home from "./pages/Home";
@@ -25,18 +24,14 @@ import PrivateRouteComplete from "./routes/PrivateRouteComplete";
 import AdminRoute from "./routes/AdminRoute";
 
 function AppContent() {
-  const { user } = useAuth();
-
   return (
     <Router>
-      {user && <Navbar />}
+      <Navbar />
       <Routes>
-
         {/* Public */}
-        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-
         <Route path="/complete-profile" element={
           <PrivateRouteComplete>
             <CompleteProfile />
@@ -57,20 +52,17 @@ function AppContent() {
         <Route path="/admin/add-product" element={<AdminRoute><AddProductPage /></AdminRoute>} />
         <Route path="/admin/view-products" element={<AdminRoute><ViewProductsPage /></AdminRoute>} />
 
-        {/* fallback */}
+        {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />
-
       </Routes>
     </Router>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <AppContent />
     </AuthProvider>
   );
 }
-
-export default App;

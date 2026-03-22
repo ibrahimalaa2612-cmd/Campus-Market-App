@@ -3,7 +3,7 @@ import { auth, db } from "../../firebase/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import './Auth.css';
+import "../../styles/Auth.css";
 
 function Register({ onBack }) {
 
