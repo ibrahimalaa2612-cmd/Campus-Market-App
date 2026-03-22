@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { db, storage } from "../firebase/firebase";
+import { db, storage } from "../../firebase/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { useAuth } from "../context/AuthContext";
-import "../styles/Profile.css";
+import { useAuth } from "../../context/AuthContext";
+import "../../styles/Profile.css";
 
 export default function Profile() {
   const { user, loading } = useAuth();

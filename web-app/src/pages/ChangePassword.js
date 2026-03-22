@@ -14,28 +14,23 @@ const ChangePassword = () => {
     setMessage('');
     setError('');
 
-    // 1. التأكد إن الباسورد متطابق
     if (newPassword !== confirmPassword) {
       return setError('كلمتا المرور غير متطابقتين!');
     }
 
-    // 2. التأكد إن الباسورد قوي شوية (اختياري بس مهم للـ Testing)
     if (newPassword.length < 6) {
       return setError('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
     }
 
-    // هنجيب المستخدم اللي فاتح دلوقتي
     const user = auth.currentUser;
 
     if (user) {
       try {
-        // 3. تحديث الباسورد في الفايربيز
         await updatePassword(user, newPassword);
         setMessage('تم تحديث كلمة المرور بنجاح!');
         setNewPassword('');
         setConfirmPassword('');
       } catch (err) {
-        // الفايربيز بيطلب إن المستخدم يكون لسه عامل لوجن قريب عشان يغير الباسورد (أمان)
         if (err.code === 'auth/requires-recent-login') {
           setError('لأسباب أمنية، يرجى تسجيل الخروج والدخول مرة أخرى لتتمكن من تغيير كلمة المرور.');
         } else {

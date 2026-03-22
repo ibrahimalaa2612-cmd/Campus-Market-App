@@ -1,286 +1,140 @@
-
-/*
-import AdminLayout from "../../layout/AdminLayout";
-import { auth, db, storage } from "../../firebase/firebase";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { db } from "../../firebase/firebase";
+import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import "../../styles/AdminDashboard.css";
 
-import { doc, getDoc, collection, addDoc, getDocs, deleteDoc, serverTimestamp} from "firebase/firestore";
-import { signOut } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+const categories = ["All", "كتب", "أجهزة", "ملابس", "أدوات", "أخرى"];
+const statuses = ["All", "pending", "approved", "rejected"];
 
-const Dashboard = () => {
-
-  const navigate = useNavigate();
-
-  // eslint-disable-next-line no-unused-vars
-  const [userName, setUserName] = useState("");
+export default function Dashboard() {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
 
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [image, setImage] = useState(null);
-
-  const productsCollection = collection(db, "products");
-
-  // eslint-disable-next-line no-unused-vars
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/login");
-  };
-
-
-  const fetchUserName = async () => {
-
-    const uid = auth.currentUser?.uid;
-
-    if (!uid) return;
-
-    const docRef = doc(db, "userProfiles", uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      setUserName(docSnap.data().name);
-    } else {
-      setUserName("User");
-    }
-  };
-
+  // جلب جميع المنتجات مع اسم البائع
   const fetchProducts = async () => {
-
-    const data = await getDocs(productsCollection);
-
-    const productsList = data.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    setProducts(productsList);
-  };
-
-  useEffect(() => {
-    fetchUserName();
-    fetchProducts();
-  });
-
-  
-  // eslint-disable-next-line no-unused-vars
-  const handleAddProduct = async (e) => {
-
-    e.preventDefault();
-
-    if (!name || !price || !image) {
-      alert("Please fill all fields");
-      return;
-    }
-
+    setLoading(true);
     try {
-
-      const imageRef = ref(storage, "products/" + image.name);
-
-      await uploadBytes(imageRef, image);
-
-      const imageUrl = await getDownloadURL(imageRef);
-
-      await addDoc(productsCollection, {
-        name,
-        price: Number(price),
-        image: imageUrl,
-        createdAt: serverTimestamp()
+      const snapshot = await getDocs(collection(db, "products"));
+      const items = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          name: data.name,
+          price: data.price,
+          image: data.image,
+          description: data.description || "-",
+          category: data.category || "-",
+          condition: data.condition || "-",
+          status: data.status || "pending",
+          seller: data.sellerName || data.sellerEmail || "Unknown",
+        };
       });
-
-      alert("Product Added");
-
-      setName("");
-      setPrice("");
-      setImage(null);
-
-      fetchProducts();
-
-    } catch (error) {
-      console.log(error);
-      alert("Error adding product");
+      setProducts(items);
+      setFilteredProducts(items);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteProduct = async (id) => {
-
-    const confirmDelete = window.confirm("Delete this product?");
-
-    if (!confirmDelete) return;
-
-    await deleteDoc(doc(db, "products", id));
-
-    fetchProducts();
-  };
-
-  return (
-
-   <AdminLayout>
-  <div style={{ marginTop: "40px" }}>
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))",
-        gap: "20px",
-        padding: "20px"
-      }}
-    >
-      {products.map((product) => (
-        <div
-          key={product.id}
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: "12px",
-            padding: "15px",
-            textAlign: "center",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-          }}
-        >
-          <img
-            src={product.image}
-            alt={product.name}
-            style={{
-              width: "100%",
-              height: "150px",
-              objectFit: "cover",
-              borderRadius: "8px"
-            }}
-          />
-          <h3 style={{ marginTop: "10px" }}>{product.name}</h3>
-          <p style={{ fontWeight: "bold" }}>{product.price} EGP</p>
-          <button
-            onClick={() => handleDeleteProduct(product.id)}
-            style={{
-              backgroundColor: "#968b8b",
-              color: "white",
-              border: "none",
-              padding: "8px 15px",
-              borderRadius: "6px",
-              cursor: "pointer"
-            }}
-          >
-            Delete
-          </button>
-        </div>
-      ))}
-    </div>
-  </div>
-</AdminLayout>
-  );
-};
-
-export default Dashboard;
-*/
-
-import AdminLayout from "../../layout/AdminLayout";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-// eslint-disable-next-line no-unused-vars
-import { db, storage,auth } from "../../firebase/firebase";
-// eslint-disable-next-line no-unused-vars
-import { doc, getDoc, collection, getDocs, deleteDoc, serverTimestamp } from "firebase/firestore";
-// eslint-disable-next-line no-unused-vars
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-const Dashboard = () => {
-  const navigate = useNavigate();
-
-  const [userName, setUserName] = useState("");
-  const [products, setProducts] = useState([]);
-
-  const productsCollection = collection(db, "products");
-
-  
-  const fetchUserName = async () => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-
-    const docRef = doc(db, "userProfiles", uid);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      setUserName(docSnap.data().name);
-    } else {
-      setUserName("Admin");
+  // تحديث حالة المنتج
+  const updateStatus = async (id, status) => {
+    try {
+      await updateDoc(doc(db, "products", id), { status });
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status } : p))
+      );
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const fetchProducts = async () => {
-    const data = await getDocs(productsCollection);
-    const productsList = data.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    setProducts(productsList);
-  };
-
+  // فلترة المنتجات بناءً على التصنيف والحالة
   useEffect(() => {
-    fetchUserName();
-    fetchProducts();
-  },);
+    let temp = [...products];
+    if (categoryFilter !== "All") {
+      temp = temp.filter((p) => p.category === categoryFilter);
+    }
+    if (statusFilter !== "All") {
+      temp = temp.filter((p) => p.status === statusFilter);
+    }
+    setFilteredProducts(temp);
+  }, [categoryFilter, statusFilter, products]);
 
-  const handleDeleteProduct = async (id) => {
-    const confirmDelete = window.confirm("Delete this product?");
-    if (!confirmDelete) return;
-    await deleteDoc(doc(db, "products", id));
+  // تحميل البيانات عند أول عرض للصفحة
+  useEffect(() => {
     fetchProducts();
-  };
+  }, []);
 
   return (
-    <AdminLayout>
-    <div style={{ minHeight: "100vh", backgroundColor: "#2c3e50", padding: "30px" }}>
-        <h1 style={{ textAlign: "center", color: "#f1c40f", marginBottom: "30px" }}>
-        Welcome_Admin {userName}
-        </h1>
+    <div className="dashboard-container">
+      <h2 className="dashboard-title">لوحة تحكم المنتجات</h2>
 
-        
-        <div style={{ marginTop: "30px", display: "flex", justifyContent: "center", gap: "20px" }}>
-          <button
-            onClick={() => navigate("/admin/add-product")}
-            style={{
-              padding: "12px 25px",
-              fontSize: "16px",
-              fontWeight: "bold",
-              backgroundColor: "#3498db",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer"
-            }}
-          >
-            Add Product
-          </button>
-
-          <button
-            onClick={() => navigate("/admin/view-products")}
-            style={{
-              padding: "12px 25px",
-              fontSize: "16px",
-              fontWeight: "bold",
-              backgroundColor: "#2ecc71",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer"
-            }}
-          >
-            View Products
-          </button>
-        </div>
-
-        
-        <div style={{ marginTop: "40px", display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: "20px", padding: "20px" }}>
-          {products.map((product) => (
-            <div key={product.id} style={{ border: "1px solid #ddd", borderRadius: "12px", padding: "15px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-              <img src={product.image} alt={product.name} style={{ width: "100%", height: "150px", objectFit: "cover", borderRadius: "8px" }} />
-              <h3 style={{ marginTop: "10px" }}>{product.name}</h3>
-              <p style={{ fontWeight: "bold" }}>{product.price} EGP</p>
-              <button onClick={() => handleDeleteProduct(product.id)} style={{ backgroundColor: "#e74c3c", color: "white", border: "none", padding: "8px 15px", borderRadius: "6px", cursor: "pointer" }}>
-                Delete
-              </button>
-            </div>
-          ))}
-        </div>
+      {/* Filters */}
+      <div className="filters">
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+        </select>
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          {statuses.map((st) => <option key={st} value={st}>{st}</option>)}
+        </select>
       </div>
-    </AdminLayout>
-  );
-};
 
-export default Dashboard;
+      {loading ? (
+        <p style={{ textAlign: "center" }}>جاري التحميل...</p>
+      ) : (
+        <table className="products-table">
+          <thead>
+            <tr>
+              <th>الصورة</th>
+              <th>الاسم</th>
+              <th>السعر</th>
+              <th>الوصف</th>
+              <th>التصنيف</th>
+              <th>الحالة</th>
+              <th>البائع</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProducts.map((product) => (
+              <tr key={product.id}>
+                <td>
+                  <img src={product.image} alt={product.name} className="product-image" />
+                </td>
+                <td>{product.name}</td>
+                <td>{product.price} EGP</td>
+                <td>{product.description}</td>
+                <td>{product.category} - {product.condition}</td>
+                <td>{product.status}</td>
+                <td>{product.seller}</td>
+                <td>
+                  {product.status === "pending" && (
+                    <>
+                      <button
+                        className="action-button approve"
+                        onClick={() => updateStatus(product.id, "approved")}
+                      >
+                        ✅ قبول
+                      </button>
+                      <button
+                        className="action-button reject"
+                        onClick={() => updateStatus(product.id, "rejected")}
+                      >
+                        ❌ رفض
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}

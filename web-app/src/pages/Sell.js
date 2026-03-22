@@ -1,27 +1,33 @@
 import { useState } from "react";
 import { db } from "../firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "../context/AuthContext";
+import "../styles/Sell.css";
 
-const Sell = () => {
+export default function Sell() {
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [driveLink, setDriveLink] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // دالة لتحويل رابط الدرايف العادي لرابط مباشر يظهر في الموقع
+  const categories = ["كتب", "أجهزة", "ملابس", "أدوات", "أخرى"];
+
   const convertToDirectLink = (url) => {
     if (url.includes("drive.google.com")) {
       const fileId = url.split("/d/")[1]?.split("/")[0];
       return `https://lh3.googleusercontent.com/u/0/d/${fileId}`;
     }
-    return url; // لو الرابط مش درايف سيبه زي ما هو
+    return url;
   };
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
 
-    if (!name || !price || !driveLink) {
-      alert("يرجى إدخال اسم المنتج والسعر ورابط الصورة من الدرايف");
+    if (!name || !price || !driveLink || !category) {
+      alert("يرجى إدخال اسم المنتج والسعر والصورة والتصنيف");
       return;
     }
 
@@ -34,51 +40,64 @@ const Sell = () => {
         price: Number(price),
         image: finalImageUrl,
         status: "pending",
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        sellerId: user.uid,
+        sellerName: user.displayName || user.email,
+        description,
+        category,
       });
 
-      alert("تم الإرسال بنجاح! تأكد أن رابط الدرايف 'عام' (Anyone with the link)");
+      alert("تم الإرسال بنجاح! تأكد أن رابط الدرايف 'عام'");
       setName("");
       setPrice("");
       setDriveLink("");
+      setDescription("");
+      setCategory("");
     } catch (err) {
       alert("حدث خطأ أثناء الحفظ");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ margin: "50px auto", maxWidth: "500px", textAlign: "center", color: "#fff" }}>
-      <h2>إضافة منتج (عبر جوجل درايف)</h2>
-      <form onSubmit={handleAddProduct} style={{ backgroundColor: "#1e293b", padding: "30px", borderRadius: "10px" }}>
-        <input
-          type="text"
-          placeholder="اسم المنتج"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={{ width: "90%", padding: "12px", marginBottom: "15px", backgroundColor: "#334155", border: "1px solid #475569", borderRadius: "5px", color: "#fff" }}
-        />
-        <input
-          type="number"
-          placeholder="السعر"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          style={{ width: "90%", padding: "12px", marginBottom: "15px", backgroundColor: "#334155", border: "1px solid #475569", borderRadius: "5px", color: "#fff" }}
-        />
-        <input
-          type="text"
-          placeholder="انسخ رابط مشاركة الصورة من الدرايف هنا"
-          value={driveLink}
-          onChange={(e) => setDriveLink(e.target.value)}
-          style={{ width: "90%", padding: "12px", marginBottom: "25px", backgroundColor: "#334155", border: "1px solid #475569", borderRadius: "5px", color: "#fff" }}
-        />
-        <button type="submit" disabled={loading} style={{ padding: "12px 25px", backgroundColor: "#2ecc71", color: "white", border: "none", borderRadius: "6px", width: "90%" }}>
-          {loading ? "جاري الإرسال..." : "إرسال للمراجعة"}
-        </button>
-      </form>
+    <div className="sell-container">
+      <div className="sell-card">
+        <h2>إضافة منتج جديد</h2>
+        <form onSubmit={handleAddProduct}>
+          <input
+            type="text"
+            placeholder="اسم المنتج"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="السعر"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="رابط الصورة من Google Drive"
+            value={driveLink}
+            onChange={(e) => setDriveLink(e.target.value)}
+          />
+          <textarea
+            placeholder="وصف المنتج (اختياري)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="">اختر التصنيف</option>
+            {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
+          <button type="submit" disabled={loading}>
+            {loading ? "جاري الإرسال..." : "إرسال للمراجعة"}
+          </button>
+        </form>
+      </div>
     </div>
   );
-};
-
-export default Sell;
+}

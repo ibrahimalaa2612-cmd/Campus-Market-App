@@ -1,109 +1,78 @@
-/*
-import React, { useState } from 'react';
-import { auth } from '../../firebase';
+// src/pages/auth/Login.jsx
+import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import './Auth.css';
-
-function Login({ onSwitch, onSuccess }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      if (onSuccess) onSuccess();
-    } catch {
-      setError("خطأ في الإيميل أو كلمة السر");
-    }
-  };
-
-  return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Campus Market</h2>
-        <form onSubmit={handleLogin}>
-          <input type="email" placeholder="الإيميل الجامعي" onChange={e => setEmail(e.target.value)} required />
-          <input type="password" placeholder="كلمة السر" onChange={e => setPassword(e.target.value)} required />
-          <button type="submit" className="primary">دخول</button>
-        </form>
-        <p>ليس لديك حساب؟</p>
-        <button type="button" className="secondary" onClick={onSwitch}>إنشاء حساب جديد</button>
-        {error && <p className="error-msg">{error}</p>}
-      </div>
-    </div>
-  );
-}
-
-export default Login;*/
-
-import React, { useState } from 'react';
-import { auth, db } from '../../firebase';
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
-import './Auth.css';
+import { useNavigate, Link } from "react-router-dom";
+import "../../styles/Auth.css";
 
-function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
+
+    if (!email || !password) {
+      setError("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+      return;
+    }
 
     try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const uid = userCredential.user.uid;
+      // تسجيل الدخول
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-    if (email === "admin@gmail.com") {
-      navigate("/admin/dashboard");
-      return;
-    }
-    const profileRef = doc(db, "userProfiles", uid);
-    const profileSnap = await getDoc(profileRef);
-    if (!profileSnap.exists()) {
-      navigate("/complete-profile");
-      return;
-    }
-    navigate("/home");
-
-    } catch {
-      setError("خطأ في الإيميل أو كلمة السر");
+      // التحقق من صلاحية Admin
+      const adminDoc = await getDoc(doc(db, "admins", user.email));
+      if (adminDoc.exists() && adminDoc.data().role === "admin") {
+        navigate("/admin/dashboard"); // يروح للـ Dashboard
+      } else {
+        navigate("/home"); // المستخدم العادي
+      }
+    } catch (err) {
+      console.error(err);
+      setError("بيانات الدخول غير صحيحة");
     }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Campus Market</h2>
-
+        <h2>تسجيل الدخول</h2>
         <form onSubmit={handleLogin}>
           <input
             type="email"
-            placeholder="الإيميل الجامعي"
-            onChange={e => setEmail(e.target.value)}
+            placeholder="البريد الإلكتروني"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
+          <input
+            type="password"
+            placeholder="كلمة المرور"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit" className="primary">دخول</button>
 
-          <input type="password" placeholder="كلمة السر" onChange={e => setPassword(e.target.value)}required />
-         <button type="submit" className="primary">
-            دخول
-          </button>
+          {error && <p className="error-msg">{error}</p>}
+
+          <div style={{ marginTop: "15px", textAlign: "center" }}>
+            <Link to="/forgot-password" style={{ color: "#3498db", textDecoration: "none", fontSize: "14px" }}>
+              نسيت كلمة السر؟
+            </Link>
+          </div>
+
+          <p style={{ marginTop: "15px", textAlign: "center" }}>
+            ليس لديك حساب؟ <Link to="/register">إنشاء حساب</Link>
+          </p>
         </form>
-        <p>ليس لديك حساب؟</p> 
-        <button type="button" className="secondary" onClick={() => navigate("/register")} >
-          إنشاء حساب جديد
-        </button>
-
-        {error && <p className="error-msg">{error}</p>}
       </div>
     </div>
   );
 }
-
-export default Login;

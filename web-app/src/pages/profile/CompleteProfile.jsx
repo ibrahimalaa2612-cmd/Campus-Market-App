@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { auth, db, storage } from '../../firebase';
+import { auth, db, storage } from '../../firebase/firebase';
 import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import styles from './CompleteProfile.module.css';
