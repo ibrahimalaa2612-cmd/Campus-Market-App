@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebase";
+import { auth, db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useState, useRef, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
 import "../styles/Navbar.css";
 
 export default function Navbar() {
@@ -10,6 +11,28 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const [profileImage, setProfileImage] = useState("/avatar-placeholder.png");
+
+  // جلب صورة البروفايل من Firestore
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchProfileImage = async () => {
+      try {
+        const docRef = doc(db, "userProfiles", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setProfileImage(data.imageUrl || "/avatar-placeholder.png");
+        }
+      } catch (err) {
+        console.error("Error fetching profile image:", err);
+      }
+    };
+
+    fetchProfileImage();
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -51,7 +74,7 @@ export default function Navbar() {
 
               <div className="profile-dropdown" ref={dropdownRef}>
                 <img
-                  src={user.photoURL || "/avatar-placeholder.png"}
+                  src={profileImage} // استخدم الصورة من Firestore
                   alt="Profile"
                   className="profile-img"
                   onClick={() => setDropdownOpen(!dropdownOpen)}

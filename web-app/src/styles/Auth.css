@@ -1,3 +1,4 @@
+/* ===== Base ===== */
 * {
   margin: 0;
   padding: 0;
@@ -23,18 +24,22 @@
   color: #fff;
   text-align: center;
   transition: transform 0.3s ease;
+  position: relative; /* مهم للanimation */
 }
 
+/* ===== Hover ===== */
 .auth-card:hover {
   transform: translateY(-5px);
 }
 
+/* ===== Headings ===== */
 .auth-card h2 {
   margin-bottom: 25px;
   font-size: 1.8rem;
   color: #10b981;
 }
 
+/* ===== Form Inputs ===== */
 .auth-card form {
   display: flex;
   flex-direction: column;
@@ -66,6 +71,7 @@
   min-height: 80px;
 }
 
+/* ===== Buttons ===== */
 .auth-card button {
   padding: 12px;
   border: none;
@@ -96,12 +102,14 @@ button.secondary:hover {
   transform: scale(1.03);
 }
 
+/* ===== Error messages ===== */
 .error-msg {
   color: #ef4444;
   font-size: 0.9rem;
   margin-top: 5px;
 }
 
+/* ===== Paragraphs and links ===== */
 .auth-card p {
   margin-top: 12px;
   font-size: 0.9rem;
@@ -118,6 +126,7 @@ button.secondary:hover {
   color: #059669;
 }
 
+/* ===== Responsive ===== */
 @media screen and (max-width: 480px) {
   .auth-card {
     padding: 30px 20px;
@@ -125,4 +134,54 @@ button.secondary:hover {
   .auth-card h2 {
     font-size: 1.5rem;
   }
+}
+
+/* ===== Animated Card Slide ===== */
+.slide-in-right {
+  animation: slideInRight 0.3s forwards;
+}
+.slide-out-left {
+  animation: slideOutLeft 0.3s forwards;
+}
+.slide-in-left {
+  animation: slideInLeft 0.3s forwards;
+}
+.slide-out-right {
+  animation: slideOutRight 0.3s forwards;
+}
+
+@keyframes slideInRight {
+  0% { transform: translateX(50px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutLeft {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(-50px); opacity: 0; }
+}
+@keyframes slideInLeft {
+  0% { transform: translateX(-50px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(50px); opacity: 0; }
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  height: 6px;
+  background-color: #374151;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-step {
+  width: 50%;
+  background-color: #111827;
+  transition: background-color 0.3s ease;
+}
+.progress-step.active {
+  background-color: #10b981;
 }

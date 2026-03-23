@@ -7,14 +7,14 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null); // "admin" أو "user"
-  const [loading, setLoading] = useState(true); // loading state لمنع flash
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // تحقق من الدور
+        // تحقق من صلاحية Admin
         const docRef = doc(db, "admins", currentUser.email);
         const docSnap = await getDoc(docRef);
 

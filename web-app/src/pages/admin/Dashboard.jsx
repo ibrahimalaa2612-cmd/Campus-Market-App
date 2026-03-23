@@ -13,7 +13,6 @@ export default function Dashboard() {
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  // جلب جميع المنتجات مع اسم البائع
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -41,7 +40,6 @@ export default function Dashboard() {
     }
   };
 
-  // تحديث حالة المنتج
   const updateStatus = async (id, status) => {
     try {
       await updateDoc(doc(db, "products", id), { status });
@@ -53,7 +51,6 @@ export default function Dashboard() {
     }
   };
 
-  // فلترة المنتجات بناءً على التصنيف والحالة
   useEffect(() => {
     let temp = [...products];
     if (categoryFilter !== "All") {
@@ -65,7 +62,6 @@ export default function Dashboard() {
     setFilteredProducts(temp);
   }, [categoryFilter, statusFilter, products]);
 
-  // تحميل البيانات عند أول عرض للصفحة
   useEffect(() => {
     fetchProducts();
   }, []);

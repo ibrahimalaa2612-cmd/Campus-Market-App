@@ -3,10 +3,9 @@ import Navbar from "./components/Navbar";
 
 // Pages
 import Home from "./pages/Home";
-import Profile from "./pages/profile/Profile";
+import Profile from "./pages/Profile";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import CompleteProfile from "./pages/profile/CompleteProfile";
 import Sell from "./pages/Sell";
 import Orders from "./pages/Orders";
 import Cart from "./pages/Cart";
@@ -32,11 +31,6 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/complete-profile" element={
-          <PrivateRouteComplete>
-            <CompleteProfile />
-          </PrivateRouteComplete>
-        } />
 
         {/* User */}
         <Route path="/" element={<PrivateRouteComplete><Home /></PrivateRouteComplete>} />
