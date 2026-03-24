@@ -13,19 +13,26 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        // تحقق من صلاحية Admin
-        const docRef = doc(db, "admins", currentUser.email);
-        const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists() && docSnap.data().role === "admin") {
-          setRole("admin");
-        } else {
+      if (currentUser) {
+        try {
+          const docRef = doc(db, "userProfiles", currentUser.uid);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setRole(data.role || "user"); // 👈 هنا الصح
+          } else {
+            setRole("user");
+          }
+        } catch (err) {
+          console.error("Error fetching role:", err);
           setRole("user");
         }
       } else {
         setRole(null);
       }
+
       setLoading(false);
     });
 

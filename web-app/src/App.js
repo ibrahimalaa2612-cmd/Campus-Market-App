@@ -7,15 +7,14 @@ import Profile from "./pages/Profile";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Sell from "./pages/Sell";
-import Orders from "./pages/Orders";
-import Cart from "./pages/Cart";
+import MyProducts from "./pages/MyProducts";
 import ForgotPassword from "./pages/ForgotPassword";
 import Settings from "./pages/Settings";
+import ProductDetail from "./pages/ProductDetail";
+import SellerProducts from "./pages/SellerProducts";
 
 // Admin Pages
 import Dashboard from "./pages/admin/Dashboard";
-import AddProductPage from "./pages/admin/AddProductPage";
-import ViewProductsPage from "./pages/admin/ViewProductsPage";
 
 // Context & Routes
 import { AuthProvider } from "./context/AuthContext";
@@ -38,13 +37,19 @@ function AppContent() {
         <Route path="/profile" element={<PrivateRouteComplete><Profile /></PrivateRouteComplete>} />
         <Route path="/settings" element={<PrivateRouteComplete><Settings /></PrivateRouteComplete>} />
         <Route path="/sell" element={<PrivateRouteComplete><Sell /></PrivateRouteComplete>} />
-        <Route path="/orders" element={<PrivateRouteComplete><Orders /></PrivateRouteComplete>} />
-        <Route path="/cart" element={<PrivateRouteComplete><Cart /></PrivateRouteComplete>} />
+        <Route path="/myProducts" element={<PrivateRouteComplete><MyProducts /></PrivateRouteComplete>} />
+        <Route path="/product/:id" element={<PrivateRouteComplete><ProductDetail /></PrivateRouteComplete>} />
+        <Route path="/seller/:sellerId" element={<PrivateRouteComplete><SellerProducts /></PrivateRouteComplete>} />
 
         {/* Admin */}
-        <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
-        <Route path="/admin/add-product" element={<AdminRoute><AddProductPage /></AdminRoute>} />
-        <Route path="/admin/view-products" element={<AdminRoute><ViewProductsPage /></AdminRoute>} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <AdminRoute>
+              <Dashboard />
+            </AdminRoute>
+          } 
+        />
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />

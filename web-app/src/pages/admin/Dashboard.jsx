@@ -1,38 +1,30 @@
 import { useEffect, useState } from "react";
 import { db } from "../../firebase/firebase";
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc
+} from "firebase/firestore";
 import "../../styles/AdminDashboard.css";
-
-const categories = ["All", "كتب", "أجهزة", "ملابس", "أدوات", "أخرى"];
-const statuses = ["All", "pending", "approved", "rejected"];
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [activeTab, setActiveTab] = useState("pending");
+  const [search, setSearch] = useState("");
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const snapshot = await getDocs(collection(db, "products"));
-      const items = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          name: data.name,
-          price: data.price,
-          image: data.image,
-          description: data.description || "-",
-          category: data.category || "-",
-          condition: data.condition || "-",
-          status: data.status || "pending",
-          seller: data.sellerName || data.sellerEmail || "Unknown",
-        };
-      });
+      const items = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+        status: docSnap.data().status || "pending"
+      }));
       setProducts(items);
-      setFilteredProducts(items);
     } catch (err) {
       console.error(err);
     } finally {
@@ -41,95 +33,85 @@ export default function Dashboard() {
   };
 
   const updateStatus = async (id, status) => {
-    try {
-      await updateDoc(doc(db, "products", id), { status });
-      setProducts((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, status } : p))
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    await updateDoc(doc(db, "products", id), { status });
+    fetchProducts();
   };
 
-  useEffect(() => {
-    let temp = [...products];
-    if (categoryFilter !== "All") {
-      temp = temp.filter((p) => p.category === categoryFilter);
-    }
-    if (statusFilter !== "All") {
-      temp = temp.filter((p) => p.status === statusFilter);
-    }
-    setFilteredProducts(temp);
-  }, [categoryFilter, statusFilter, products]);
+  const deleteProduct = async (id) => {
+    if (!window.confirm("هل تريد حذف المنتج؟")) return;
+    await deleteDoc(doc(db, "products", id));
+    fetchProducts();
+  };
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  const filtered = products
+    .filter((p) => (activeTab === "all" ? true : p.status === activeTab))
+    .filter((p) =>
+      p.name?.toLowerCase().includes(search.toLowerCase())
+    );
+
   return (
     <div className="dashboard-container">
-      <h2 className="dashboard-title">لوحة تحكم المنتجات</h2>
+      <h2>لوحة التحكم</h2>
 
-      {/* Filters */}
-      <div className="filters">
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-          {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
-        </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          {statuses.map((st) => <option key={st} value={st}>{st}</option>)}
-        </select>
+      {/* Tabs */}
+      <div className="tabs">
+        {["pending", "approved", "rejected", "all"].map((tab) => (
+          <button
+            key={tab}
+            className={activeTab === tab ? "active" : ""}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="بحث عن منتج..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="search-input"
+      />
+
       {loading ? (
-        <p style={{ textAlign: "center" }}>جاري التحميل...</p>
+        <p>جاري التحميل...</p>
       ) : (
-        <table className="products-table">
-          <thead>
-            <tr>
-              <th>الصورة</th>
-              <th>الاسم</th>
-              <th>السعر</th>
-              <th>الوصف</th>
-              <th>التصنيف</th>
-              <th>الحالة</th>
-              <th>البائع</th>
-              <th>الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((product) => (
-              <tr key={product.id}>
-                <td>
-                  <img src={product.image} alt={product.name} className="product-image" />
-                </td>
-                <td>{product.name}</td>
-                <td>{product.price} EGP</td>
-                <td>{product.description}</td>
-                <td>{product.category} - {product.condition}</td>
-                <td>{product.status}</td>
-                <td>{product.seller}</td>
-                <td>
-                  {product.status === "pending" && (
-                    <>
-                      <button
-                        className="action-button approve"
-                        onClick={() => updateStatus(product.id, "approved")}
-                      >
-                        ✅ قبول
-                      </button>
-                      <button
-                        className="action-button reject"
-                        onClick={() => updateStatus(product.id, "rejected")}
-                      >
-                        ❌ رفض
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="products-grid">
+          {filtered.map((product) => (
+            <div key={product.id} className="product-card">
+              <img src={product.image} alt="" />
+              <h3>{product.name}</h3>
+              <p>{product.price} EGP</p>
+              <p>{product.category}</p>
+              <p className={`status ${product.status}`}>
+                {product.status}
+              </p>
+
+              <div className="actions">
+                {product.status === "pending" && (
+                  <>
+                    <button onClick={() => updateStatus(product.id, "approved")}>
+                      قبول
+                    </button>
+                    <button onClick={() => updateStatus(product.id, "rejected")}>
+                      رفض
+                    </button>
+                  </>
+                )}
+
+                <button onClick={() => deleteProduct(product.id)}>
+                  حذف
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

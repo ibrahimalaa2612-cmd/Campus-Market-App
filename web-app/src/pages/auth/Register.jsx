@@ -62,6 +62,7 @@ export default function Register() {
       setLoading(true);
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const defaultImage = "https://i.ibb.co/4pDNDk1/default-profile.png";
 
       await setDoc(doc(db, "userProfiles", userCredential.user.uid), {
         email: email.toLowerCase(),
@@ -71,6 +72,8 @@ export default function Register() {
         university,
         faculty,
         studentId,
+        imageUrl: defaultImage,
+        role: "user", // 👈 مهم
         createdAt: serverTimestamp()
       });
 

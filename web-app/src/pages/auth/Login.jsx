@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { useState, useEffect } from "react";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
@@ -12,6 +12,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigate("/home", { replace: true });
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -22,11 +31,12 @@ export default function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      if (!user.emailVerified) return setError("يرجى تأكيد البريد الإلكتروني أولاً.");
-
       const adminDoc = await getDoc(doc(db, "admins", user.email));
-      if (adminDoc.exists() && adminDoc.data().role === "admin") navigate("/admin/dashboard", { replace: true });
-      else navigate("/home", { replace: true });
+      if (adminDoc.exists() && adminDoc.data().role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+      } else {
+        navigate("/home", { replace: true });
+      }
     } catch (err) {
       console.error(err);
       if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") setError("بيانات الدخول غير صحيحة");

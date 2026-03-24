@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import "../styles/Navbar.css";
 
 export default function Navbar() {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth(); // 👈 خدنا role هنا
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -39,6 +39,7 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  // غلق dropdown عند الضغط خارجه
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -68,21 +69,40 @@ export default function Navbar() {
 
           {user ? (
             <>
+            
+              {/* يظهر بس للـ admin 
+
+              {role === "admin" && (
+                <Link to="/dashboard" className="nav-link">لوحة التحكم</Link>
+              )}
+                
+                */}
+
               <Link to="/sell" className="nav-link">بيع منتج</Link>
-              <Link to="/orders" className="nav-link">الطلبات</Link>
-              <Link to="/cart" className="nav-link">سلة المشتريات</Link>
+              <Link to="/myProducts" className="nav-link">منتجاتي</Link>
 
               <div className="profile-dropdown" ref={dropdownRef}>
                 <img
-                  src={profileImage} // استخدم الصورة من Firestore
+                  src={profileImage}
                   alt="Profile"
                   className="profile-img"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 />
+
                 <div className={`dropdown-menu ${dropdownOpen ? "open" : ""}`}>
                   <Link to="/profile" className="dropdown-item">الملف الشخصي</Link>
+
+                  {/* Dashboard جوه dropdown */}
+                  {role === "admin" && (
+                    <Link to="/dashboard" className="dropdown-item">لوحة التحكم</Link>
+                  )}
+
                   <Link to="/settings" className="dropdown-item">الإعدادات</Link>
-                  <button className="dropdown-item logout-btn" onClick={handleLogout}>
+
+                  <button
+                    className="dropdown-item logout-btn"
+                    onClick={handleLogout}
+                  >
                     تسجيل الخروج
                   </button>
                 </div>

@@ -1,0 +1,252 @@
+body {
+  font-family: "Poppins", sans-serif;
+  background: #f0f2f5;
+  color: #111827;
+}
+
+.my-products-container, .product-detail-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+  gap: 20px;
+}
+
+.product-card {
+  background: #1f2937;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  color: #fff;
+  padding: 10px;
+  position: relative;
+}
+
+.product-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.product-card h3 {
+  margin: 10px 0;
+  font-size: 1.1rem;
+}
+
+.product-card .price {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.product-card .category,
+.product-card .date {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.sold-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: red;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.actions .edit-btn, .actions .sold-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.actions .edit-btn { background: #3b82f6; color: #fff; }
+.actions .edit-btn:hover { background: #2563eb; }
+
+.actions .sold-btn { background: #f59e0b; color: #111827; }
+.actions .sold-btn:hover { background: #d97706; }
+
+/* Product Detail */
+.product-detail-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.images-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.images-section img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.info-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.info-section .price { color: #10b981; font-weight: bold; margin: 10px 0; }
+.info-section .seller, .info-section .university, .info-section .category, .info-section .desc { margin: 5px 0; color: #d1d5db; }
+.show-phone-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: #3b82f6;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+.show-phone-btn:hover { background: #2563eb; }
+
+.rejected-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #ef4444;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+.actions .delete-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  background: #ef4444;
+  color: #fff;
+}
+.actions .delete-btn:hover {
+  background: #dc2626;
+}
+
+/* Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: #1f2937;
+  width: 600px;
+  max-width: 100%;
+  border-radius: 12px;
+  padding: 30px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+/* عنوان الـ modal */
+.modal h3 {
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+/* Labels */
+.modal label {
+  font-weight: bold;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Inputs & selects */
+.modal input,
+.modal select {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  background: #374151;
+  color: #fff;
+}
+
+.modal input:focus,
+.modal select:focus {
+  box-shadow: 0 0 0 3px #3b82f6;
+}
+
+/* زر الحفظ والإلغاء */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.modal-actions .edit-btn,
+.modal-actions .delete-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-actions .edit-btn {
+  background: #3b82f6;
+  color: #fff;
+}
+.modal-actions .edit-btn:hover {
+  background: #2563eb;
+}
+
+.modal-actions .delete-btn {
+  background: #ef4444;
+  color: #fff;
+}
+.modal-actions .delete-btn:hover {
+  background: #dc2626;
+}
+
+/* Scrollbar جميل */
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+.modal::-webkit-scrollbar-thumb {
+  background-color: #3b82f6;
+  border-radius: 3px;
+}
+.modal::-webkit-scrollbar-track {
+  background: #1f2937;
+}
