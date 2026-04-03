@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, ActivityIndicator,TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 
 export default function Home() {
+  const router = useRouter();
   const userEmail = auth.currentUser?.email || 'طالب';
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,13 @@ export default function Home() {
   }, []);
 
   const renderProduct = ({ item }: { item: any }) => (
-    <View style={styles.productCard}>
+    <TouchableOpacity 
+      style={styles.productCard} 
+      onPress={() => router.push({
+        pathname: '/product-details/[id]',
+        params: { id: item.id }
+      })}
+    >
       {item.image ? (
         <Image source={{ uri: item.image }} style={styles.productImage} />
       ) : (
@@ -41,9 +49,13 @@ export default function Home() {
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.name}</Text>
         <Text style={styles.productPrice}>{item.price} ج.م</Text>
-        {item.description && <Text style={styles.productDesc}>{item.description}</Text>}
+        {item.description && (
+          <Text style={styles.productDesc} numberOfLines={1}>
+            {item.description}
+          </Text>
+        )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

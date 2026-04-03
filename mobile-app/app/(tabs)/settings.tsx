@@ -29,7 +29,9 @@ export default function SettingsScreen() {
 
       <View style={styles.menu}>
         <Text style={styles.menuTitle}>إعدادات الحساب</Text>
-        
+      <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/cart')}>
+       <Text style={styles.menuItemText}>سلة المشتريات</Text>
+      </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/change-password')}>
           <Text style={styles.menuItemText}>إعادة تعيين كلمة السر</Text>
         </TouchableOpacity>

@@ -46,6 +46,9 @@ export default function RootLayout() {
           <Stack.Screen name="forgot-password" options={{ presentation: 'modal' }} />
           <Stack.Screen name="change-password" />
           <Stack.Screen name="Register" />
+          <Stack.Screen name="product-details/[id]" options={{ headerShown: true, title: 'تفاصيل المنتج' }} />
+          <Stack.Screen name="cart" options={{ headerShown: true, title: 'سلة المشتريات' }} />
+          <Stack.Screen name="checkout" options={{ headerShown: true, title: 'إتمام الدفع' }} />
           {/* سطر الداشبورد الجديد جوه الـ Stack */}
           <Stack.Screen name="dashboard" options={{ headerShown: true, title: 'لوحة التحكم' }} />
         </Stack>
