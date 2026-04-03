@@ -2,61 +2,66 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage, auth } from '../../firebaseConfig';
+import { db, auth } from '../../firebaseConfig';
 import { useRouter } from 'expo-router';
 
 export default function AddProductScreen() {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [externalImageUrl, setExternalImageUrl] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.5,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       setImageUri(result.assets[0].uri);
     }
   };
 
   const handleAddProduct = async () => {
-    if (!name || !price || !description || !imageUri) {
-      Alert.alert('تنبيه', 'يرجى إكمال جميع البيانات واختيار صورة');
+    if (!name || !price || !description) {
+      Alert.alert('تنبيه', 'يرجى إكمال البيانات الأساسية');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-      const imageName = `products/${Date.now()}_${auth.currentUser?.uid}.jpg`;
-      const imageRef = ref(storage, imageName);
-      
-      await uploadBytes(imageRef, blob);
-      const imageUrl = await getDownloadURL(imageRef);
+      const finalImage = externalImageUrl || "https://via.placeholder.com/150?text=Campus+Market";
 
       await addDoc(collection(db, 'products'), {
         name,
         price: Number(price),
         description,
-        image: imageUrl,
+        image: finalImage,
         status: 'pending',
-        sellerEmail: auth.currentUser?.email,
+        sellerEmail: auth.currentUser?.email || "student@market.com",
         createdAt: serverTimestamp()
       });
 
-      Alert.alert('نجاح', 'تم إرسال المنتج للإدارة، سيتم نشره بعد الموافقة');
-      router.replace('/(tabs)');
-    } catch (error) {
-      Alert.alert('خطأ', 'حدث خطأ أثناء رفع المنتج');
+      setName('');
+      setPrice('');
+      setDescription('');
+      setExternalImageUrl('');
+      setImageUri(null);
+
+      Alert.alert('نجاح', 'تم إرسال المنتج للمراجعة بنجاح', [
+        { 
+          text: 'موافق', 
+          onPress: () => router.replace('/(tabs)') 
+        }
+      ]);
+
+    } catch (error: any) {
+      Alert.alert('خطأ', 'حدث خطأ في السيرفر: ' + (error.message || 'خطأ غير معروف'));
     } finally {
       setLoading(false);
     }
@@ -70,7 +75,7 @@ export default function AddProductScreen() {
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.imagePreview} />
         ) : (
-          <Text style={styles.imagePickerText}>اضغط لاختيار صورة للمنتج</Text>
+          <Text style={styles.imagePickerText}>اضغط لاختيار صورة (اختياري)</Text>
         )}
       </TouchableOpacity>
 
@@ -86,6 +91,12 @@ export default function AddProductScreen() {
         value={price}
         onChangeText={setPrice}
         keyboardType="numeric"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="رابط صورة خارجي (اختياري)"
+        value={externalImageUrl}
+        onChangeText={setExternalImageUrl}
       />
       <TextInput
         style={[styles.input, styles.textArea]}
