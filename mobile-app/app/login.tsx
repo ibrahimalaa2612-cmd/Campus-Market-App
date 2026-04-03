@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -11,16 +12,58 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("تنبيه", "يرجى إدخال البريد الإلكتروني وكلمة المرور");
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      Alert.alert("تنبيه", "الرجاء إدخال الإيميل أولاً.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      Alert.alert("تنبيه", "صيغة الإيميل غير صحيحة، تأكد إنك كاتبه بشكل صحيح.");
+      return;
+    }
+
+    if (!password) {
+      Alert.alert("تنبيه", "الرجاء إدخال كلمة المرور.");
       return;
     }
 
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (error: any) {
-      Alert.alert("فشل الدخول", "تأكد من صحة البيانات أو وجود حساب");
+      const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, password);
+      const user = userCredential.user;
+
+      const adminDoc = await getDoc(doc(db, "admins", user.email));
+      
+      if (adminDoc.exists() && adminDoc.data().role === "admin") {
+        Alert.alert("نجاح", "تم تسجيل الدخول كمسؤول");
+        router.push('/admin/dashboard'); 
+      } else {
+        router.push('/'); 
+      }
+
+    } catch (error) {
+      switch (error.code) {
+        case 'auth/user-not-found':
+          Alert.alert("خطأ في الإيميل", "هذا الإيميل غير مسجل لدينا، تأكد منه أو قم بإنشاء حساب.");
+          break;
+        case 'auth/wrong-password':
+          Alert.alert("خطأ في كلمة المرور", "كلمة المرور التي أدخلتها غير صحيحة، حاول مرة أخرى.");
+          break;
+        case 'auth/invalid-email':
+          Alert.alert("خطأ", "صيغة البريد الإلكتروني غير صحيحة.");
+          break;
+        case 'auth/invalid-credential':
+          Alert.alert("بيانات خاطئة", "الإيميل أو كلمة المرور غير صحيحة.");
+          break;
+        case 'auth/too-many-requests':
+          Alert.alert("تنبيه", "تم حظر الحساب مؤقتاً بسبب محاولات كثيرة خاطئة، حاول لاحقاً.");
+          break;
+        default:
+          Alert.alert("فشل الدخول", "حدث خطأ غير متوقع، تأكد من اتصالك بالإنترنت.");
+      }
     } finally {
       setLoading(false);
     }
