@@ -6,6 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebaseConfig'; 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import 'react-native-reanimated';
+import { AuthProvider } from '../constants/AuthContext'; // سطر 9 الجديد
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -24,7 +25,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (initializing) return;
-
     const currentSegment = segments[0] as string;
     const inAuthGroup = currentSegment === 'login' || currentSegment === 'Register' || currentSegment === 'forgot-password';
 
@@ -38,15 +38,19 @@ export default function RootLayout() {
   if (initializing) return null;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="login" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="forgot-password" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="change-password" />
-        <Stack.Screen name="Register" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="login" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="forgot-password" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="change-password" />
+          <Stack.Screen name="Register" />
+          {/* سطر الداشبورد الجديد جوه الـ Stack */}
+          <Stack.Screen name="dashboard" options={{ headerShown: true, title: 'لوحة التحكم' }} />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

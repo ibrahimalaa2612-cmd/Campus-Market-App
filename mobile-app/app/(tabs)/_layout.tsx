@@ -4,10 +4,10 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-
+import { useAuth } from '../../constants/AuthContext';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-
+const { role } = useAuth();
   return (
     <Tabs
       screenOptions={{
@@ -29,6 +29,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
         }}
       />
+      <Tabs.Screen
+  name="dashboard"
+  options={{
+    title: 'لوحة التحكم',
+    href: role === 'admin' ? '/dashboard' : null,
+    tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet.rectangle.fill" color={color} />,
+    tabBarItemStyle: role === 'admin' ? {} : { display: 'none' },
+  }}
+/>
       <Tabs.Screen
         name="add-product"
         options={{
