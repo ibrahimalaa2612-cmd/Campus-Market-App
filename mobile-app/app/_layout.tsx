@@ -51,9 +51,10 @@ export default function RootLayout() {
           <Stack.Screen name="checkout" options={{ headerShown: true, title: 'إتمام الدفع' }} />
           {/* سطر الداشبورد الجديد جوه الـ Stack */}
           <Stack.Screen name="dashboard" options={{ headerShown: true, title: 'لوحة التحكم' }} />
-        </Stack>
+          <Stack.Screen name="admin-orders" options={{ headerShown: true, title: 'طلبات العملاء' }} />
+          </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
     </AuthProvider>
   );
-}
+  }

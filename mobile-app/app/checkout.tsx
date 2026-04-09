@@ -4,10 +4,10 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
-
 export default function CheckoutScreen() {
   const [method, setMethod] = useState('');
   const [phone, setPhone] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [loading, setLoading] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
@@ -21,13 +21,29 @@ export default function CheckoutScreen() {
   }, []);
 
   const handleFinish = async () => {
-    if (!method) { Alert.alert('خطأ', 'اختر طريقة دفع'); return; }
-    if (method === 'cash' && !phone) { Alert.alert('خطأ', 'ادخل رقم الهاتف'); return; }
+    // 1. التحقق من اختيار وسيلة الدفع
+    if (!method) {
+      Alert.alert('خطأ', 'إختر طريقة دفع');
+      return;
+    }
+
+    // 2. التحقق من رقم الهاتف لو الدفع كاش
+    if (method === 'cash') {
+      if (!phone) {
+        Alert.alert('خطأ', 'أدخل رقم الهاتف');
+        return;
+      }
+      // التحقق إن الرقم بيبدأ بـ 01 وطوله 11
+      if (!phone.startsWith('01') || phone.length !== 11) {
+        Alert.alert('خطأ', 'رقم الهاتف غير صحيح، يجب أن يبدأ بـ 01 ويتكون من 11 رقم');
+        return;
+      }
+    }
 
     setLoading(true);
     try {
       const total = cartItems.reduce((sum, item: any) => sum + Number(item.price), 0);
-      
+
       await addDoc(collection(db, 'orders'), {
         userId: auth.currentUser?.uid,
         userEmail: auth.currentUser?.email,
@@ -40,7 +56,7 @@ export default function CheckoutScreen() {
       });
 
       await AsyncStorage.removeItem('cart');
-      Alert.alert('تم بنجاح', 'تم تسجيل طلبك');
+      Alert.alert('تم بنجاح', 'تم تسجيل طلبك بنجاح');
       router.replace('/(tabs)');
     } catch (error) {
       Alert.alert('خطأ', 'فشل في إرسال الطلب');
@@ -56,7 +72,13 @@ export default function CheckoutScreen() {
         <Text style={styles.optionText}>الدفع عند الاستلام</Text>
       </TouchableOpacity>
       {method === 'cash' && (
-        <TextInput style={styles.input} placeholder="رقم الهاتف" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+        <TextInput 
+          style={styles.input} 
+          placeholder="رقم الهاتف" 
+          keyboardType="phone-pad" 
+          value={phone} 
+          onChangeText={setPhone} 
+        />
       )}
       <TouchableOpacity style={styles.finishButton} onPress={handleFinish} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.finishText}>تأكيد الأوردر</Text>}

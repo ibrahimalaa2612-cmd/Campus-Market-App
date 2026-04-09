@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; 
-
+import { useRouter } from 'expo-router';
 const Dashboard = () => {
   const [status, setStatus] = useState('pending');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {setLoading(true);
    const q = status === 'all' 
@@ -54,15 +55,30 @@ const Dashboard = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Admin Dashboard</Text>
+      <TouchableOpacity 
+  style={{
+    backgroundColor: '#3498db',
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 20,
+    marginBottom: 10,
+    alignItems: 'center'
+  }} 
+  onPress={() => router.push('/admin-orders')}
+>
+  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
+    عرض طلبات الشراء 🛒
+  </Text>
+  </TouchableOpacity>
       <View style={styles.tabContainer}>
-        {['pending', 'approved', 'rejected', 'all'].map((tab) => (
-          <TouchableOpacity 
-            key={tab} 
-            style={[styles.tab, status === tab && styles.activeTab]} 
-            onPress={() => setStatus(tab)}
-          >
-            <Text style={styles.tabText}>{tab.toUpperCase()}</Text>
-          </TouchableOpacity>
+          {['pending', 'approved', 'rejected', 'all'].map((tab) => (
+            <TouchableOpacity 
+              key={tab} 
+              style={[styles.tab, status === tab && styles.activeTab]} 
+              onPress={() => setStatus(tab)}
+            >
+              <Text style={styles.tabText}>{tab.toUpperCase()}</Text>
+            </TouchableOpacity>
         ))}
       </View>
 
