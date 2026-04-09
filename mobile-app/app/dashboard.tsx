@@ -54,7 +54,15 @@ const Dashboard = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Admin Dashboard</Text>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingVertical: 10 }}>
+  <Text style={styles.header}>لوحة التحكم</Text>
+  <TouchableOpacity 
+    style={{ backgroundColor: '#2ecc71', padding: 8, borderRadius: 5 }}
+    onPress={() => router.replace('/(tabs)')}
+  >
+    <Text style={{ color: '#fff', fontWeight: 'bold' }}>🛒 المتجر</Text>
+  </TouchableOpacity>
+</View>
       <TouchableOpacity 
   style={{
     backgroundColor: '#3498db',

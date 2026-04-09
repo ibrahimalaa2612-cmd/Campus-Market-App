@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebaseConfig";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -18,7 +18,17 @@ export default function LoginScreen() {
       Alert.alert("تنبيه", "الرجاء إدخال الإيميل أولاً.");
       return;
     }
-
+// التحقق من الرتبة في جدول الويب
+      // const userDoc = await getDoc(doc(db, "userProfiles", user.uid));
+      
+      // if (userDoc.exists() && userDoc.data().role === 'admin') {
+      //   // لو أدمن في الويب يدخل داشبورد الموبايل
+      //   Alert.alert('مرحباً أيها المسؤول', 'تم تسجيل الدخول كأدمن');
+      //   router.replace('/dashboard');
+      // } else {
+      //   // لو يوزر عادي يروح الصفحة الرئيسية
+      //   router.replace('/(tabs)');
+      // }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
       Alert.alert("تنبيه", "صيغة الإيميل غير صحيحة، تأكد إنك كاتبه بشكل صحيح.");
@@ -35,13 +45,13 @@ export default function LoginScreen() {
       const userCredential = await signInWithEmailAndPassword(auth, trimmedEmail, password);
       const user = userCredential.user;
 
-      const adminDoc = await getDoc(doc(db, "admins", user.email));
+      const adminDoc = await getDoc(doc(db, "userProfiles", user.uid));
       
       if (adminDoc.exists() && adminDoc.data().role === "admin") {
         Alert.alert("نجاح", "تم تسجيل الدخول كمسؤول");
-        router.push('/admin/dashboard'); 
+        router.replace('/dashboard'); 
       } else {
-        router.push('/'); 
+        router.replace('/'); 
       }
 
     } catch (error) {

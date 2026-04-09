@@ -7,6 +7,19 @@ import { db, auth } from '../../firebaseConfig';
 export default function Home() {
   const router = useRouter();
   const userEmail = auth.currentUser?.email || 'طالب';
+  const [role, setRole] = useState('');
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (auth.currentUser) {
+        const userDoc = await getDoc(doc(db, "userProfiles", auth.currentUser.uid));
+        if (userDoc.exists()) {
+          setRole(userDoc.data().role);
+        }
+      }
+    };
+    fetchUserRole();
+  }, []);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -16,8 +29,10 @@ export default function Home() {
       const q = query(collection(db, 'products'), where('status', '==', 'approved'));
       const querySnapshot = await getDocs(q);
       const productsList = querySnapshot.docs.map(doc => ({
+        
         id: doc.id,
         ...doc.data()
+        
       }));
       setProducts(productsList);
     } catch (error) {

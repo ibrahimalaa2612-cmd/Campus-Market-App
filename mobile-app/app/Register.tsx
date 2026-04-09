@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { doc, setDoc } from 'firebase/firestore';
+import { db , auth } from "../firebaseConfig";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -21,9 +22,19 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-    } catch (error: any) {
+   try {
+      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log("Saving user to database with ID:", user.uid);
+      await setDoc(doc(db, 'userProfiles', user.uid), {
+        email: email,
+        role: 'user', // بينزل يوزر عادي وإنت تخليه أدمن من الويب
+        createdAt: new Date(),
+      });
+
+      Alert.alert("نجاح", "تم إنشاء الحساب بنجاح");
+    }catch (error: any) {
       Alert.alert("فشل التسجيل", error.message);
     } finally {
       setLoading(false);

@@ -4,12 +4,27 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../constants/AuthContext';
+import { useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
 
 
 export default function SettingsScreen() {
   const router = useRouter();
   const userEmail = auth.currentUser?.email || 'طالب جامعي';
-  const { role } = useAuth();
+ const [role, setRole] = useState<string | null>(null);
+ useEffect(() => {
+    const fetchRole = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const userDoc = await getDoc(doc(db, "userProfiles", user.uid));
+        if (userDoc.exists()) {
+          setRole(userDoc.data().role);
+        }
+      }
+    };
+    fetchRole();
+  }, []);
   const handleLogout = async () => {
     try {
       await signOut(auth);
