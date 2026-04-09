@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   profileSection: { alignItems: 'center', marginBottom: 40 },
   avatar: { width: 90, height: 90, backgroundColor: '#3498db', borderRadius: 45, justifyContent: 'center', alignItems: 'center', marginBottom: 15, elevation: 3 },
   avatarText: { fontSize: 36, color: '#fff', fontWeight: 'bold' },
-  emailText: { fontSize: 18, color: '#2c3e50', fontWeight: 'bold' },
+  emailText: { fontSize: 18, color: '#2c3e50', fontWeight: 'bolnd' },
   menu: { backgroundColor: '#fff', borderRadius: 15, padding: 15, elevation: 2 },
   menuTitle: { fontSize: 18, fontWeight: 'bold', color: '#7f8c8d', marginBottom: 15, textAlign: 'right' },
   menuItem: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
