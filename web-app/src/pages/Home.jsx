@@ -3,7 +3,7 @@ import { db } from "../firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import "../styles/Home.css";
-
+const DEFAULT_IMAGE = "https://i.postimg.cc/FKMdfByG/download.jpg";
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
@@ -111,7 +111,13 @@ const categories = [
             className="product-card"
             onClick={() => navigate(`/product/${product.id}`)}
           >
-            <img src={product.image} alt={product.name} />
+            
+
+<img
+  src={product.image || DEFAULT_IMAGE}
+  alt={product.name}
+  onError={(e) => e.target.src = DEFAULT_IMAGE}
+/>
 
             <h3>{product.name}</h3>
 
