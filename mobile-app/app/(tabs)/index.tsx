@@ -1,27 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, Image, ActivityIndicator,TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 
 export default function Home() {
   const router = useRouter();
   const userEmail = auth.currentUser?.email || 'طالب';
-  const [role, setRole] = useState('');
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (auth.currentUser) {
-        const userDoc = await getDoc(doc(db, "userProfiles", auth.currentUser.uid));
-        if (userDoc.exists()) {
-          setRole(userDoc.data().role);
-        }
-      }
-    };
-    fetchUserRole();
-  }, []);
+  
+  // States للبحث والتصنيفات
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('الكل');
+
+  // قائمة التصنيفات الموحدة
+  const categories = ['الكل', 'أجهزه إلكترونيه', 'كتب ومراجع', 'أدوات منزليه صغيره','مستلزمات رياضيه','معدات كمبيوتر', 'أدوات مدرسيه', 'ملابس وإكسسوارات','خدمات', 'أخرى'];
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -29,14 +23,12 @@ export default function Home() {
       const q = query(collection(db, 'products'), where('status', '==', 'approved'));
       const querySnapshot = await getDocs(q);
       const productsList = querySnapshot.docs.map(doc => ({
-        
         id: doc.id,
         ...doc.data()
-        
       }));
       setProducts(productsList);
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching products:", error);
     } finally {
       setLoading(false);
     }
@@ -45,6 +37,13 @@ export default function Home() {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // منطق الفلترة (بحث + تصنيف)
+  const filteredProducts = products.filter(item => {
+    const matchesSearch = item.name?.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === 'الكل' || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const renderProduct = ({ item }: { item: any }) => (
     <TouchableOpacity 
@@ -75,22 +74,52 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      {/* الهيدر */}
       <View style={styles.header}>
         <Text style={styles.title}>مرحباً بك،</Text>
         <Text style={styles.subtitle}>{userEmail}</Text>
+      </View>
+
+      {/* شريط البحث */}
+      <TextInput
+        style={styles.searchBar}
+        placeholder="ابحث عن منتج بالاسم..."
+        placeholderTextColor="#95a5a6"
+        value={search}
+        onChangeText={setSearch}
+      />
+
+      {/* قائمة التصنيفات الأفقية */}
+      <View style={{ marginBottom: 20 }}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={categories}
+          keyExtractor={(item) => item}
+          renderItem={({ item }) => (
+            <TouchableOpacity 
+              onPress={() => setSelectedCategory(item)}
+              style={[styles.catBtn, selectedCategory === item && styles.activeCatBtn]}
+            >
+              <Text style={[styles.catText, selectedCategory === item && styles.activeCatText]}>
+                {item}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
       </View>
 
       <Text style={styles.sectionTitle}>أحدث المنتجات</Text>
 
       {loading ? (
         <ActivityIndicator size="large" color="#3498db" style={{ marginTop: 50 }} />
-      ) : products.length === 0 ? (
+      ) : filteredProducts.length === 0 ? (
         <View style={styles.placeholderBox}>
-          <Text style={styles.placeholderText}>لا توجد منتجات حالياً</Text>
+          <Text style={styles.placeholderText}>لا توجد نتائج تطابق بحثك</Text>
         </View>
       ) : (
         <FlatList
-          data={products}
+          data={filteredProducts}
           keyExtractor={(item) => item.id}
           renderItem={renderProduct}
           showsVerticalScrollIndicator={false}
@@ -105,9 +134,48 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f4f7f6', padding: 20, paddingTop: 60 },
-  header: { marginBottom: 25, alignItems: 'flex-end' },
+  header: { marginBottom: 20, alignItems: 'flex-end' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#2c3e50' },
   subtitle: { fontSize: 16, color: '#7f8c8d', marginTop: 5 },
+  
+  // تنسيق شريط البحث
+  searchBar: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 15,
+    textAlign: 'right',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    fontSize: 16,
+    color: '#2c3e50',
+    elevation: 2,
+  },
+
+  // تنسيق أزرار التصنيفات
+  catBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#eee',
+    elevation: 1,
+  },
+  activeCatBtn: {
+    backgroundColor: '#2c3e50',
+    borderColor: '#2c3e50',
+  },
+  catText: {
+    color: '#7f8c8d',
+    fontWeight: '600',
+  },
+  activeCatText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: '#2c3e50', marginBottom: 15, textAlign: 'right' },
   productCard: { backgroundColor: '#fff', borderRadius: 15, marginBottom: 15, overflow: 'hidden', elevation: 3, flexDirection: 'row', alignItems: 'center', padding: 10 },
   productImage: { width: 90, height: 90, borderRadius: 10 },

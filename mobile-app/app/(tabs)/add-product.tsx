@@ -4,15 +4,28 @@ import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 import { useRouter } from 'expo-router';
+import RNPickerSelect from 'react-native-picker-select';
 
 export default function AddProductScreen() {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
   const [externalImageUrl, setExternalImageUrl] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+   const categories = [
+  { label: 'أجهزه إلكترونيه', value: 'أجهزه إلكترونيه' },
+  { label: 'كتب ومراجع', value: 'كتب ومراجع' },
+  { label: 'أدوات منزليه صغيره', value: 'أدوات منزليه صغيره' },
+  { label: 'مستلزمات رياضيه', value: 'مستلزمات رياضيه' },
+  { label: 'معدات كمبيوتر', value: 'معدات كمبيوتر' },
+  { label: 'أدوات مدرسيه', value: 'أدوات مدرسيه' },
+  { label: 'ملابس وإكسسوارات', value: 'ملابس وإكسسوارات' },
+  { label: 'خدمات', value: 'خدمات' },
+  { label: 'أخرى', value: 'أخرى' },
+];
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -41,6 +54,7 @@ export default function AddProductScreen() {
         name,
         price: Number(price),
         description,
+        category: category,
         image: finalImage,
         status: 'pending',
         sellerEmail: auth.currentUser?.email || "student@market.com",
@@ -92,6 +106,21 @@ export default function AddProductScreen() {
         onChangeText={setPrice}
         keyboardType="numeric"
       />
+      <View style={styles.pickerContainer}>
+     <Text style={styles.label}>اختر التصنيف</Text>
+      <RNPickerSelect
+      onValueChange={(value) => setCategory(value)}
+      items={categories}
+        placeholder={{ label: 'اختر تصنيف المنتج...', value: null }}
+      style={pickerSelectStyles}
+      value={category}
+  fixAndroidTouchableBug={true} 
+  useNativeAndroidPickerStyle={false} 
+  Icon={() => {
+      return <View style={{ backgroundColor: 'transparent', borderTopWidth: 10, borderTopColor: 'gray', borderRightWidth: 10, borderRightColor: 'transparent', borderLeftWidth: 10, borderLeftColor: 'transparent', width: 0, height: 0, marginTop: 15, marginRight: 10 }} />;
+    }}
+        />
+      </View>
       <TextInput
         style={styles.input}
         placeholder="رابط صورة خارجي (اختياري)"
@@ -122,5 +151,36 @@ const styles = StyleSheet.create({
   input: { width: '100%', backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 15, paddingVertical: 12, marginBottom: 15, textAlign: 'right', fontSize: 16 },
   textArea: { height: 100, textAlignVertical: 'top' },
   button: { backgroundColor: '#3498db', width: '100%', height: 50, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 40 },
-  buttonText: { color: 'white', fontSize: 18, fontWeight: 'bold' }
+  buttonText: { color: 'white', fontSize: 18, fontWeight: 'bold' }});
+  const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#fff',
+    textAlign: 'right',
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#fff',
+    textAlign: 'right',
+    height: 50, // لازم نحدد طول ثابت هنا
+    width: '100%', // وعرض كامل
+  },
+  iconContainer: {
+    top: 10,
+    right: 12,
+  },
 });
