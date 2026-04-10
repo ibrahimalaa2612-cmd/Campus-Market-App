@@ -18,4 +18,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CAMPUS_MARKET_D381E }}
           channelId: live
           projectId: campus-market-d381e
-          entryPoint: web-appؤ
+          entryPoint: web-app
