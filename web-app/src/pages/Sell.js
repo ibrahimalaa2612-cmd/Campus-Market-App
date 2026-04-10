@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { db } from "../firebase/firebase";
+import { db, storage } from "../firebase/firebase";
 import {
   collection,
   addDoc,
@@ -7,47 +7,45 @@ import {
   doc,
   getDoc
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../context/AuthContext";
 import "../styles/Sell.css";
+
+
+const DEFAULT_IMAGE = "https://i.postimg.cc/FKMdfByG/download.jpg";
 
 export default function Sell() {
   const { user } = useAuth();
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [driveLink, setDriveLink] = useState("");
+  const [imageFile, setImageFile] = useState(null);     
+  const [imagePreview, setImagePreview] = useState(null); 
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [condition, setCondition] = useState("");
   const [loading, setLoading] = useState(false);
 
   const categories = [
-  "كل التصنيفات",
-  "كتب و مراجع",
-  "أجهزة إلكترونية",
-  "ملابس و إكسسوارات",
-  "أدوات مدرسية",
-  "أدوات منزلية صغيرة",
-  "مستلزمات رياضية",
-  "معدات كمبيوتر",
-  "أجهزة منزلية",
-  "خدمات",
-  "أخرى"
-];
+    "كل التصنيفات","كتب و مراجع","أجهزة إلكترونية",
+    "ملابس و إكسسوارات","أدوات مدرسية","أدوات منزلية صغيرة",
+    "مستلزمات رياضية","معدات كمبيوتر","أجهزة منزلية","خدمات","أخرى"
+  ];
   const conditions = ["جديد", "مستعمل", "مستعمل - يشبه الجديد"];
 
-  const convertToDirectLink = (url) => {
-    if (url.includes("drive.google.com")) {
-      const fileId = url.split("/d/")[1]?.split("/")[0];
-      return `https://lh3.googleusercontent.com/u/0/d/${fileId}`;
+  
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file)); 
     }
-    return url;
   };
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
 
-    if (!name || !price || !driveLink || !category || !condition) {
+    if (!name || !price || !category || !condition) {
       alert("يرجى إدخال كل الحقول المطلوبة");
       return;
     }
@@ -60,11 +58,16 @@ export default function Sell() {
     setLoading(true);
 
     try {
-      const finalImageUrl = convertToDirectLink(driveLink);
+      let finalImageUrl = DEFAULT_IMAGE; 
 
-      // 🔥 نجيب بيانات المستخدم
+      
+      if (imageFile) {
+        const storageRef = ref(storage, `products/${user.uid}_${Date.now()}_${imageFile.name}`);
+        await uploadBytes(storageRef, imageFile);
+        finalImageUrl = await getDownloadURL(storageRef);
+      }
+
       const userDoc = await getDoc(doc(db, "userProfiles", user.uid));
-
       if (!userDoc.exists()) {
         alert("بيانات المستخدم غير موجودة");
         setLoading(false);
@@ -76,30 +79,24 @@ export default function Sell() {
       await addDoc(collection(db, "products"), {
         name,
         price: Number(price),
-        image: finalImageUrl,
+        image: finalImageUrl,  
         status: "pending",
         condition,
         createdAt: serverTimestamp(),
-
         sellerId: user.uid,
         sellerName: userData.fullName || "مستخدم",
         sellerPhone: userData.phone || "",
         university: userData.university || "",
-
         description,
         category,
         sold: false
       });
 
       alert("تم الإرسال بنجاح! سيتم مراجعة المنتج من الأدمن");
+      setName(""); setPrice(""); setImageFile(null);
+      setImagePreview(null); setDescription("");
+      setCategory(""); setCondition("");
 
-      // Reset
-      setName("");
-      setPrice("");
-      setDriveLink("");
-      setDescription("");
-      setCategory("");
-      setCondition("");
     } catch (err) {
       console.error(err);
       alert("حدث خطأ أثناء الحفظ");
@@ -114,55 +111,35 @@ export default function Sell() {
         <h2>إضافة منتج جديد</h2>
 
         <form onSubmit={handleAddProduct}>
-          <input
-            type="text"
-            placeholder="اسم المنتج"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <input type="text" placeholder="اسم المنتج"
+            value={name} onChange={(e) => setName(e.target.value)} />
 
-          <input
-            type="number"
-            placeholder="السعر"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
+          <input type="number" placeholder="السعر"
+            value={price} onChange={(e) => setPrice(e.target.value)} />
 
-          <input
-            type="text"
-            placeholder="رابط الصورة من Google Drive"
-            value={driveLink}
-            onChange={(e) => setDriveLink(e.target.value)}
-          />
+          
+          <label style={{ color: "#9ca3af", fontSize: "0.9rem" }}>
+            صورة المنتج (اختياري)
+          </label>
+          <input type="file" accept="image/*" onChange={handleImageChange} />
 
-          <textarea
-            placeholder="وصف المنتج (اختياري)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+          
+          {imagePreview && (
+            <img src={imagePreview} alt="preview"
+              style={{ width: "100%", borderRadius: "8px", marginBottom: "10px", maxHeight: "200px", objectFit: "cover" }} />
+          )}
 
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
+          <textarea placeholder="وصف المنتج (اختياري)"
+            value={description} onChange={(e) => setDescription(e.target.value)} />
+
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="">اختر التصنيف</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
+            {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
           </select>
 
-          <select
-            value={condition}
-            onChange={(e) => setCondition(e.target.value)}
-          >
+          <select value={condition} onChange={(e) => setCondition(e.target.value)}>
             <option value="">اختر حالة المنتج</option>
-            {conditions.map((cond) => (
-              <option key={cond} value={cond}>
-                {cond}
-              </option>
-            ))}
+            {conditions.map((cond) => <option key={cond} value={cond}>{cond}</option>)}
           </select>
 
           <button type="submit" disabled={loading}>
