@@ -5,7 +5,7 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
-  doc
+  doc,
 } from "firebase/firestore";
 import "../../styles/AdminDashboard.css";
 
@@ -17,19 +17,17 @@ export default function Dashboard() {
 
   const fetchProducts = async () => {
     setLoading(true);
-    try {
-      const snapshot = await getDocs(collection(db, "products"));
-      const items = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
-        status: docSnap.data().status || "pending"
-      }));
-      setProducts(items);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+
+    const snapshot = await getDocs(collection(db, "products"));
+
+    const items = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+      status: d.data().status || "pending",
+    }));
+
+    setProducts(items);
+    setLoading(false);
   };
 
   const updateStatus = async (id, status) => {
@@ -48,71 +46,127 @@ export default function Dashboard() {
   }, []);
 
   const filtered = products
-    .filter((p) => (activeTab === "all" ? true : p.status === activeTab))
+    .filter((p) =>
+      activeTab === "all" ? true : p.status === activeTab
+    )
     .filter((p) =>
       p.name?.toLowerCase().includes(search.toLowerCase())
     );
 
   return (
-    <div className="dashboard-container">
-      <h2>لوحة التحكم</h2>
+    <div className="admin">
 
-      {/* Tabs */}
-      <div className="tabs">
-        {["pending", "approved", "rejected", "all"].map((tab) => (
-          <button
-            key={tab}
-            className={activeTab === tab ? "active" : ""}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
+      {/* HEADER */}
+      <div className="admin-header">
+        <h2>لوحة التحكم</h2>
+        <p>إدارة المنتجات</p>
       </div>
 
-      {/* Search */}
+      {/* TABS */}
+      <div className="tabs">
+        {["pending", "approved", "rejected", "all"].map(
+          (tab) => (
+            <button
+              key={tab}
+              className={
+                activeTab === tab ? "active" : ""
+              }
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab}
+            </button>
+          )
+        )}
+      </div>
+
+      {/* SEARCH */}
       <input
-        type="text"
-        placeholder="بحث عن منتج..."
+        className="search"
+        placeholder="ابحث عن منتج..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="search-input"
       />
 
+      {/* GRID */}
       {loading ? (
-        <p>جاري التحميل...</p>
+        <p className="empty">Loading...</p>
       ) : (
-        <div className="products-grid">
+        <div className="grid">
+
           {filtered.map((product) => (
-            <div key={product.id} className="product-card">
-              <img src={product.image} alt="" />
-              <h3>{product.name}</h3>
-              <p>{product.price} EGP</p>
-              <p>{product.category}</p>
-              <p className={`status ${product.status}`}>
-                {product.status}
-              </p>
+            <div
+              key={product.id}
+              className="card"
+            >
 
-              <div className="actions">
-                {product.status === "pending" && (
-                  <>
-                    <button onClick={() => updateStatus(product.id, "approved")}>
-                      قبول
-                    </button>
-                    <button onClick={() => updateStatus(product.id, "rejected")}>
-                      رفض
-                    </button>
-                  </>
-                )}
+              <img
+                src={product.image}
+                alt=""
+              />
 
-                <button onClick={() => deleteProduct(product.id)}>
-                  حذف
-                </button>
+              <div className="card-body">
+
+                <h3>{product.name}</h3>
+
+                <p className="price">
+                  {product.price} EGP
+                </p>
+
+                <span
+                  className={`status ${product.status}`}
+                >
+                  {product.status}
+                </span>
+
+                <div className="actions">
+
+                  {product.status === "pending" && (
+                    <>
+                      <button
+                        className="btn green"
+                        onClick={() =>
+                          updateStatus(
+                            product.id,
+                            "approved"
+                          )
+                        }
+                      >
+                        قبول
+                      </button>
+
+                      <button
+                        className="btn red"
+                        onClick={() =>
+                          updateStatus(
+                            product.id,
+                            "rejected"
+                          )
+                        }
+                      >
+                        رفض
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    className="btn gray"
+                    onClick={() =>
+                      deleteProduct(product.id)
+                    }
+                  >
+                    حذف
+                  </button>
+
+                </div>
+
               </div>
+
             </div>
           ))}
+
         </div>
       )}
+
     </div>
   );
 }

@@ -11,20 +11,23 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1f2937, #111827);
+  /* بدل الدارك التقيل */
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
 }
 
 .auth-card {
-  background-color: #1e293b;
+  /* كارت أبيض نظيف */
+  background-color: #ffffff;
   padding: 40px 30px;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   width: 100%;
   max-width: 400px;
-  color: #fff;
+  color: #111827;
   text-align: center;
   transition: transform 0.3s ease;
   position: relative;
+  border: 1px solid #e5e7eb;
 }
 
 /* ===== Hover ===== */
@@ -36,7 +39,8 @@
 .auth-card h2 {
   margin-bottom: 25px;
   font-size: 1.8rem;
-  color: #10b981;
+  /* أخضر صفقات */
+  color: #22c55e;
 }
 
 /* ===== Form Inputs ===== */
@@ -51,19 +55,19 @@
 .auth-card select {
   padding: 12px 15px;
   border-radius: 8px;
-  border: 1px solid #374151;
-  background-color: #111827;
-  color: #fff;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #111827;
   font-size: 0.95rem;
-  transition: border 0.3s ease, background 0.3s ease;
+  transition: border 0.3s ease, box-shadow 0.2s ease;
 }
 
 .auth-card input:focus,
 .auth-card textarea:focus,
 .auth-card select:focus {
   outline: none;
-  border-color: #10b981;
-  background-color: #1f2937;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
 }
 
 .auth-card textarea {
@@ -79,26 +83,28 @@
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: all 0.2s ease;
 }
 
+/* Primary = actions */
 button.primary {
-  background-color: #10b981;
-  color: #111827;
+  background-color: #22c55e;
+  color: #fff;
 }
 
 button.primary:hover {
-  background-color: #059669;
+  background-color: #16a34a;
   transform: scale(1.03);
 }
 
+/* Secondary = CTA */
 button.secondary {
-  background-color: #2563eb;
+  background-color: #f97316;
   color: #fff;
 }
 
 button.secondary:hover {
-  background-color: #1d4ed8;
+  background-color: #ea580c;
   transform: scale(1.03);
 }
 
@@ -113,17 +119,18 @@ button.secondary:hover {
 .auth-card p {
   margin-top: 12px;
   font-size: 0.9rem;
+  color: #6b7280;
 }
 
 .auth-card a {
-  color: #10b981;
+  color: #22c55e;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .auth-card a:hover {
-  color: #059669;
+  color: #16a34a;
 }
 
 /* ===== Responsive ===== */
@@ -173,15 +180,17 @@ button.secondary:hover {
   justify-content: space-between;
   margin-bottom: 20px;
   height: 6px;
-  background-color: #374151;
+  background-color: #e5e7eb;
   border-radius: 3px;
   overflow: hidden;
 }
+
 .progress-step {
   width: 50%;
-  background-color: #111827;
+  background-color: #d1d5db;
   transition: background-color 0.3s ease;
 }
+
 .progress-step.active {
-  background-color: #10b981;
+  background-color: #22c55e;
 }

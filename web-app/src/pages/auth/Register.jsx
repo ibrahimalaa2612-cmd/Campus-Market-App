@@ -5,168 +5,434 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Auth.css";
 
+/* ================= UNIVERSITIES FULL ================= */
+const universities = [
+  "جامعة القاهرة",
+  "جامعة عين شمس",
+  "جامعة الإسكندرية",
+  "جامعة حلوان",
+  "جامعة المنصورة",
+  "جامعة الزقازيق",
+  "جامعة طنطا",
+  "جامعة بنها",
+  "جامعة كفر الشيخ",
+  "جامعة قناة السويس",
+  "جامعة أسيوط",
+  "جامعة المنيا",
+  "جامعة سوهاج",
+  "جامعة بني سويف",
+  "جامعة الفيوم",
+  "جامعة دمياط",
+  "جامعة جنوب الوادي",
+  "جامعة بورسعيد",
+  "جامعة السويس",
+];
+
+const facultiesMap = {
+  "جامعة القاهرة": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "التجارة",
+    "الحقوق",
+    "الآداب",
+    "الإعلام",
+    "الحاسبات والذكاء الاصطناعي",
+    "الزراعة",
+    "طب الأسنان",
+    "التمريض",
+  ],
+
+  "جامعة عين شمس": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "التجارة",
+    "الحقوق",
+    "الآداب",
+    "الحاسبات والمعلومات",
+    "طب الأسنان",
+    "التمريض",
+  ],
+
+  "جامعة الإسكندرية": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "الآداب",
+    "التجارة",
+    "الحقوق",
+    "الزراعة",
+    "التربية",
+  ],
+
+  "جامعة حلوان": [
+    "الهندسة",
+    "الفنون الجميلة",
+    "الفنون التطبيقية",
+    "التربية",
+    "الآداب",
+    "السياحة والفنادق",
+    "الحاسبات والذكاء الاصطناعي",
+  ],
+
+  "جامعة المنصورة": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "الآداب",
+    "الحقوق",
+    "التجارة",
+    "الزراعة",
+  ],
+
+  "جامعة الزقازيق": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "الآداب",
+    "التجارة",
+    "الحقوق",
+  ],
+
+  "جامعة طنطا": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "الآداب",
+    "التجارة",
+    "الحقوق",
+  ],
+
+  "جامعة بنها": [
+    "الهندسة",
+    "الطب البيطري",
+    "العلوم",
+    "التجارة",
+    "الآداب",
+  ],
+
+  "جامعة كفر الشيخ": [
+    "الهندسة",
+    "الطب",
+    "العلوم",
+    "الآداب",
+    "التجارة",
+    "الزراعة",
+  ],
+
+  "جامعة أسيوط": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "الآداب",
+    "الحقوق",
+    "التجارة",
+  ],
+
+  "جامعة المنيا": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "الآداب",
+  ],
+
+  "جامعة سوهاج": [
+    "الهندسة",
+    "الطب",
+    "العلوم",
+    "الآداب",
+    "التجارة",
+  ],
+
+  "جامعة بني سويف": [
+    "الهندسة",
+    "الطب",
+    "الصيدلة",
+    "العلوم",
+    "الآداب",
+    "التجارة",
+  ],
+
+  "جامعة الفيوم": [
+    "الهندسة",
+    "العلوم",
+    "الآداب",
+    "التربية",
+    "الخدمة الاجتماعية",
+  ],
+};
+
 export default function Register() {
   const navigate = useNavigate();
+
   const [step, setStep] = useState(1);
   const [animCard, setAnimCard] = useState("slide-in-right");
 
-  // Step1
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Step2
-  const [fullName, setFullName] = useState("");
-  const [dob, setDob] = useState("");
-  const [phone, setPhone] = useState("");
-  const [university, setUniversity] = useState("");
-  const [faculty, setFaculty] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [form, setForm] = useState({
+    fullName: "",
+    dob: "",
+    phone: "",
+    university: "",
+    faculty: "",
+    studentId: "",
+    agreeTerms: false,
+  });
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
+  const passwordRegex =
+    /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
+
   const phoneRegex = /^01[0-9]{9}$/;
 
-  // ===== Step 1 Next =====
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  /* STEP 1 */
   const handleNext = (e) => {
     e.preventDefault();
     setError("");
 
-    if (!email) return setError("الإيميل مطلوب.");
-    if (!passwordRegex.test(password))
-      return setError("كلمة المرور يجب أن تحتوي على حرف كبير + رقم + رمز + 8 أحرف على الأقل.");
+    if (!email) return setError("الإيميل مطلوب");
+
+    if (!passwordRegex.test(password)) {
+      return setError(
+        "كلمة المرور: حرف كبير + رقم + رمز + 8 أحرف"
+      );
+    }
 
     setAnimCard("slide-out-left");
+
     setTimeout(() => {
       setStep(2);
       setAnimCard("slide-in-right");
-    }, 300);
+    }, 200);
   };
 
-  // ===== Step 2 Submit =====
+  /* REGISTER */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (fullName.trim().length < 3) return setError("الاسم الكامل يجب أن يكون 3 أحرف على الأقل.");
-    if (!dob) return setError("تاريخ الميلاد مطلوب.");
-    if (!phoneRegex.test(phone)) return setError("رقم الهاتف يجب أن يكون 11 رقمًا ويبدأ بـ 01.");
-    if (!university) return setError("الرجاء اختيار الجامعة.");
-    if (!faculty) return setError("الرجاء اختيار الكلية.");
-    if (!studentId) return setError("الرقم الجامعي مطلوب.");
-    if (!agreeTerms) return setError("يجب الموافقة على الشروط والأحكام.");
+    const {
+      fullName,
+      dob,
+      phone,
+      university,
+      faculty,
+      studentId,
+      agreeTerms,
+    } = form;
+
+    if (!fullName) return setError("الاسم مطلوب");
+    if (!dob) return setError("تاريخ الميلاد مطلوب");
+    if (!phoneRegex.test(phone))
+      return setError("رقم الهاتف غير صحيح");
+    if (!university) return setError("اختر الجامعة");
+    if (!faculty) return setError("اختر الكلية");
+    if (!studentId) return setError("الرقم الجامعي مطلوب");
+    if (!agreeTerms)
+      return setError("يجب الموافقة على الشروط");
 
     try {
       setLoading(true);
 
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const defaultImage = "https://i.ibb.co/4pDNDk1/default-profile.png";
+      const userCred =
+        await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
 
-      await setDoc(doc(db, "userProfiles", userCredential.user.uid), {
+      const uid = userCred.user.uid;
+
+      await setDoc(doc(db, "userProfiles", uid), {
+        fullName,
         email: email.toLowerCase(),
-        fullName: fullName.trim(),
-        dob,
         phone,
         university,
         faculty,
         studentId,
-        imageUrl: defaultImage,
-        role: "user", // 👈 مهم
-        createdAt: serverTimestamp()
+        imageUrl:
+          "https://i.ibb.co/4pDNDk1/default-profile.png",
+        role: "user",
+        createdAt: serverTimestamp(),
       });
 
-      alert("تم إنشاء الحساب بنجاح!");
       navigate("/home", { replace: true });
     } catch (err) {
-      console.error(err);
-      if (err.code === "auth/email-already-in-use") setError("الإيميل مستخدم بالفعل.");
-      else if (err.code === "auth/invalid-email") setError("الإيميل غير صالح.");
-      else if (err.code === "auth/weak-password") setError("كلمة المرور ضعيفة.");
-      else setError("حدث خطأ أثناء التسجيل.");
+      if (err.code === "auth/email-already-in-use")
+        setError("الإيميل مستخدم");
+      else if (err.code === "auth/invalid-email")
+        setError("الإيميل غير صحيح");
+      else if (err.code === "auth/weak-password")
+        setError("كلمة المرور ضعيفة");
+      else setError("حدث خطأ أثناء التسجيل");
     } finally {
       setLoading(false);
     }
   };
 
-  // ===== Back Button =====
   const handleBack = () => {
     setAnimCard("slide-out-right");
+
     setTimeout(() => {
       setStep(1);
       setAnimCard("slide-in-left");
-    }, 300);
+    }, 200);
   };
 
   return (
     <div className="auth-container">
       <div className={`auth-card ${animCard}`}>
-        {/* Progress bar */}
+
+        {/* STEP PROGRESS */}
         <div className="progress-bar">
-          <div className={`progress-step ${step >= 1 ? "active" : ""}`}></div>
-          <div className={`progress-step ${step >= 2 ? "active" : ""}`}></div>
+          <div className={`progress-step ${step >= 1 ? "active" : ""}`} />
+          <div className={`progress-step ${step >= 2 ? "active" : ""}`} />
         </div>
 
+        {/* STEP 1 */}
         {step === 1 && (
           <form onSubmit={handleNext}>
-            <h2>الخطوة 1: إنشاء الحساب</h2>
-            <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            <small style={{ color: "#666", fontSize: "12px" }}>
-              كلمة المرور يجب أن تحتوي على: حرف كبير + رقم + رمز + 8 أحرف على الأقل
+            <h2>إنشاء حساب</h2>
+
+            <input
+              type="email"
+              placeholder="الإيميل"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="كلمة المرور"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <small>
+              حرف كبير + رقم + رمز + 8 أحرف
             </small>
+
             {error && <p className="error-msg">{error}</p>}
-            <button type="submit" className="primary">التالي</button>
+
+            <button className="primary">التالي</button>
           </form>
         )}
 
+        {/* STEP 2 */}
         {step === 2 && (
           <form onSubmit={handleSubmit}>
-            <h2>الخطوة 2: أكمل بياناتك</h2>
-            <input type="text" placeholder="الاسم الكامل" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-            <input type="date" placeholder="تاريخ الميلاد" value={dob} onChange={(e) => setDob(e.target.value)} required />
-            <input type="text" placeholder="رقم الهاتف" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+            <h2>أكمل بياناتك</h2>
 
-            <select value={university} onChange={(e) => { setUniversity(e.target.value); setFaculty(""); }} required>
+            <input
+              name="fullName"
+              placeholder="الاسم الكامل"
+              value={form.fullName}
+              onChange={handleChange}
+            />
+
+            <input
+              type="date"
+              name="dob"
+              value={form.dob}
+              onChange={handleChange}
+            />
+
+            <input
+              name="phone"
+              placeholder="رقم الهاتف"
+              value={form.phone}
+              onChange={handleChange}
+            />
+
+            {/* UNIVERSITY */}
+            <select
+              name="university"
+              value={form.university}
+              onChange={(e) => {
+                handleChange(e);
+                setForm((p) => ({
+                  ...p,
+                  faculty: "",
+                }));
+              }}
+            >
               <option value="">اختر الجامعة</option>
-              <option value="جامعة القاهرة">جامعة القاهرة</option>
-              <option value="جامعة عين شمس">جامعة عين شمس</option>
-              <option value="جامعة الإسكندرية">جامعة الإسكندرية</option>
-              <option value="جامعة حلوان">جامعة حلوان</option>
-              <option value="جامعة المنصورة">جامعة المنصورة</option>
-              <option value="جامعة الزقازيق">جامعة الزقازيق</option>
-              <option value="جامعة طنطا">جامعة طنطا</option>
-              <option value="جامعة بنها">جامعة بنها</option>
-              <option value="جامعة قناة السويس">جامعة قناة السويس</option>
-              <option value="جامعة أسيوط">جامعة أسيوط</option>
-              <option value="جامعة المنيا">جامعة المنيا</option>
-              <option value="جامعة سوهاج">جامعة سوهاج</option>
-              <option value="جامعة بني سويف">جامعة بني سويف</option>
-              <option value="جامعة الفيوم">جامعة الفيوم</option>
+              {universities.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
             </select>
 
-            <select value={faculty} onChange={(e) => setFaculty(e.target.value)} required disabled={!university}>
+            {/* FACULTY */}
+            <select
+              name="faculty"
+              value={form.faculty}
+              onChange={handleChange}
+              disabled={!form.university}
+            >
               <option value="">اختر الكلية</option>
-              {/* Faculties حسب الجامعة */}
-              {university === "جامعة القاهرة" && ["الهندسة","التجارة","الطب","الصيدلة","القانون","العلوم","الآداب","التربية","علوم الحاسوب","الزراعة","التمريض"].map(f => <option key={f} value={f}>{f}</option>)}
-              {university === "جامعة عين شمس" && ["الهندسة","التجارة","الطب","الصيدلة","القانون","العلوم","الآداب","التربية"].map(f => <option key={f} value={f}>{f}</option>)}
-              {university === "جامعة الإسكندرية" && ["الهندسة","التجارة","الطب","الصيدلة","القانون","العلوم","الآداب","التربية"].map(f => <option key={f} value={f}>{f}</option>)}
-              {university === "جامعة حلوان" && ["الهندسة","التجارة","الآداب","التربية","علوم الحاسوب"].map(f => <option key={f} value={f}>{f}</option>)}
-              {/* باقي الجامعات تضيف بنفس الطريقة */}
+
+              {(facultiesMap[form.university] ||
+                []).map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
             </select>
 
-            <input type="text" placeholder="الرقم الجامعي" value={studentId} onChange={(e) => setStudentId(e.target.value)} required />
+            <input
+              name="studentId"
+              placeholder="الرقم الجامعي"
+              value={form.studentId}
+              onChange={handleChange}
+            />
 
-            <div style={{ margin: "10px 0" }}>
-              <label>
-                <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} /> أوافق على <a href="/terms" target="_blank">الشروط والأحكام</a>
-              </label>
-            </div>
+            <label>
+              <input
+                type="checkbox"
+                name="agreeTerms"
+                checked={form.agreeTerms}
+                onChange={handleChange}
+              />
+              أوافق على الشروط
+            </label>
 
             {error && <p className="error-msg">{error}</p>}
-            <button type="submit" className="primary" disabled={loading}>{loading ? "جاري التسجيل..." : "إنهاء التسجيل"}</button>
-            <button type="button" className="secondary" style={{ marginTop: "10px" }} onClick={handleBack}>عودة للخطوة السابقة</button>
+
+            <button disabled={loading} className="primary">
+              {loading ? "جاري التسجيل..." : "إنهاء التسجيل"}
+            </button>
+
+            <button
+              type="button"
+              className="secondary"
+              onClick={handleBack}
+            >
+              رجوع
+            </button>
           </form>
         )}
       </div>

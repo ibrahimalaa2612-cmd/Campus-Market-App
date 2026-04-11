@@ -1,4 +1,3 @@
-// firebase.js
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -11,10 +10,9 @@ const firebaseConfig = {
   storageBucket: "campus-market-d381e.appspot.com",
   messagingSenderId: "967405445457",
   appId: "1:967405445457:web:5d2d7321ae6a6c26a53370",
-  measurementId: "G-WZBTMQ4Z70"
 };
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);

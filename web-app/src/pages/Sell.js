@@ -1,150 +1,310 @@
 import { useState } from "react";
-import { db, storage } from "../firebase/firebase";
+import { db } from "../firebase/firebase";
 import {
   collection,
   addDoc,
   serverTimestamp,
-  doc,
-  getDoc
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../context/AuthContext";
 import "../styles/Sell.css";
 
+const DEFAULT_IMAGE =
+  "https://i.postimg.cc/FKMdfByG/download.jpg";
 
-const DEFAULT_IMAGE = "https://i.postimg.cc/FKMdfByG/download.jpg";
+/* =========================
+   CLOUDINARY UPLOAD
+========================= */
+const uploadToCloudinary = async (file) => {
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("upload_preset", "market_upload"); // لازم يكون Unsigned
+  formData.append("cloud_name", "dkytpqkgd");
+
+  const res = await fetch(
+    "https://api.cloudinary.com/v1_1/dkytpqkgd/image/upload",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const data = await res.json();
+
+  if (!data.secure_url) {
+    throw new Error("Upload failed");
+  }
+
+  return data.secure_url;
+};
 
 export default function Sell() {
   const { user } = useAuth();
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [imageFile, setImageFile] = useState(null);     
-  const [imagePreview, setImagePreview] = useState(null); 
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [condition, setCondition] = useState("");
+
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [mainIndex, setMainIndex] = useState(0);
+
   const [loading, setLoading] = useState(false);
 
   const categories = [
-    "كل التصنيفات","كتب و مراجع","أجهزة إلكترونية",
-    "ملابس و إكسسوارات","أدوات مدرسية","أدوات منزلية صغيرة",
-    "مستلزمات رياضية","معدات كمبيوتر","أجهزة منزلية","خدمات","أخرى"
+    "كل التصنيفات",
+
+    "كتب و مراجع",
+    "كتب دراسية",
+    "كورسات و تدريب",
+    "أدوات مدرسية",
+
+    "أجهزة إلكترونية",
+    "موبايلات و تابلت",
+    "لابتوبات و كمبيوتر",
+    "إكسسوارات إلكترونية",
+    "مكونات كمبيوتر",
+    "شاشات و أجهزة عرض",
+
+    "ملابس و إكسسوارات",
+    "ملابس رجالي",
+    "ملابس حريمي",
+    "أحذية",
+    "حقائب و شنط",
+    "ساعات و مجوهرات",
+
+    "أدوات منزلية",
+    "أثاث و ديكور",
+    "أدوات مطبخ",
+    "أجهزة منزلية",
+    "تنظيف و مستلزمات منزل",
+
+    "ألعاب فيديو",
+    "رياضة و لياقة",
+    "مستلزمات رياضية",
+
+    "سيارات و موتوسيكلات",
+    "قطع غيار",
+    "إكسسوارات سيارات",
+
+    "خدمات",
+    "خدمات برمجة",
+    "تصميم جرافيك",
+    "تسويق إلكتروني",
+    "خدمات تعليمية",
+
+    "أخرى",
   ];
+
   const conditions = ["جديد", "مستعمل", "مستعمل - يشبه الجديد"];
 
-  
+  /* =========================
+     ADD IMAGES
+  ========================= */
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file)); 
+    const files = Array.from(e.target.files);
+
+    if (imageFiles.length + files.length > 5) {
+      return alert("أقصى عدد صور 5");
     }
+
+    setImageFiles([...imageFiles, ...files]);
+    setImagePreviews([
+      ...imagePreviews,
+      ...files.map((f) => URL.createObjectURL(f)),
+    ]);
   };
 
-  const handleAddProduct = async (e) => {
+  /* =========================
+     REMOVE IMAGE
+  ========================= */
+  const removeImage = (index) => {
+    const newFiles = [...imageFiles];
+    const newPreviews = [...imagePreviews];
+
+    newFiles.splice(index, 1);
+    newPreviews.splice(index, 1);
+
+    setImageFiles(newFiles);
+    setImagePreviews(newPreviews);
+
+    if (mainIndex === index) setMainIndex(0);
+  };
+
+  /* =========================
+     SET MAIN IMAGE
+  ========================= */
+  const setMainImage = (index) => {
+    setMainIndex(index);
+  };
+
+  /* =========================
+     SUBMIT PRODUCT
+  ========================= */
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!name || !price || !category || !condition) {
-      alert("يرجى إدخال كل الحقول المطلوبة");
-      return;
-    }
+    if (!user) return alert("يجب تسجيل الدخول");
+    if (!name || !price || !category || !condition)
+      return alert("اكمل البيانات");
 
-    if (!user) {
-      alert("يجب تسجيل الدخول أولاً");
-      return;
-    }
+    if (loading) return;
 
     setLoading(true);
 
     try {
-      let finalImageUrl = DEFAULT_IMAGE; 
+      let imageUrls = [];
 
-      
-      if (imageFile) {
-        const storageRef = ref(storage, `products/${user.uid}_${Date.now()}_${imageFile.name}`);
-        await uploadBytes(storageRef, imageFile);
-        finalImageUrl = await getDownloadURL(storageRef);
+      /* 🚀 UPLOAD TO CLOUDINARY */
+      if (imageFiles.length > 0) {
+        imageUrls = await Promise.all(
+          imageFiles.map((file) => uploadToCloudinary(file))
+        );
+      } else {
+        imageUrls = [DEFAULT_IMAGE];
       }
 
-      const userDoc = await getDoc(doc(db, "userProfiles", user.uid));
-      if (!userDoc.exists()) {
-        alert("بيانات المستخدم غير موجودة");
-        setLoading(false);
-        return;
-      }
-
-      const userData = userDoc.data();
-
+      /* 💾 SAVE TO FIRESTORE */
       await addDoc(collection(db, "products"), {
         name,
         price: Number(price),
-        image: finalImageUrl,  
-        status: "pending",
-        condition,
-        createdAt: serverTimestamp(),
-        sellerId: user.uid,
-        sellerName: userData.fullName || "مستخدم",
-        sellerPhone: userData.phone || "",
-        university: userData.university || "",
         description,
         category,
-        sold: false
+        condition,
+
+        images: imageUrls,
+        image: imageUrls[mainIndex] || imageUrls[0],
+
+        sellerId: user.uid,
+        sellerEmail: user.email,
+
+        createdAt: serverTimestamp(),
+        status: "pending",
+        sold: false,
       });
 
-      alert("تم الإرسال بنجاح! سيتم مراجعة المنتج من الأدمن");
-      setName(""); setPrice(""); setImageFile(null);
-      setImagePreview(null); setDescription("");
-      setCategory(""); setCondition("");
+      alert("تم نشر المنتج بنجاح 🎉");
 
+      /* RESET */
+      setName("");
+      setPrice("");
+      setDescription("");
+      setCategory("");
+      setCondition("");
+      setImageFiles([]);
+      setImagePreviews([]);
+      setMainIndex(0);
     } catch (err) {
       console.error(err);
-      alert("حدث خطأ أثناء الحفظ");
+      alert("حدث خطأ أثناء رفع الصور");
     } finally {
       setLoading(false);
     }
   };
 
+  /* =========================
+     UI
+  ========================= */
   return (
-    <div className="sell-container">
+    <div className="sell-page">
+
+      <div className="sell-header">
+        <h2>Sell Your Product</h2>
+        <p>Post your item instantly</p>
+      </div>
+
       <div className="sell-card">
-        <h2>إضافة منتج جديد</h2>
 
-        <form onSubmit={handleAddProduct}>
-          <input type="text" placeholder="اسم المنتج"
-            value={name} onChange={(e) => setName(e.target.value)} />
+        <form className="sell-form" onSubmit={handleSubmit}>
 
-          <input type="number" placeholder="السعر"
-            value={price} onChange={(e) => setPrice(e.target.value)} />
+          <input
+            placeholder="Product Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
-          
-          <label style={{ color: "#9ca3af", fontSize: "0.9rem" }}>
-            صورة المنتج (اختياري)
-          </label>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
+          <input
+            type="number"
+            placeholder="Price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
 
-          
-          {imagePreview && (
-            <img src={imagePreview} alt="preview"
-              style={{ width: "100%", borderRadius: "8px", marginBottom: "10px", maxHeight: "200px", objectFit: "cover" }} />
-          )}
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleImageChange}
+          />
 
-          <textarea placeholder="وصف المنتج (اختياري)"
-            value={description} onChange={(e) => setDescription(e.target.value)} />
+          {/* PREVIEW */}
+          <div className="preview-grid">
+            {imagePreviews.map((img, i) => (
+              <div
+                key={i}
+                className={`preview-item ${
+                  i === mainIndex ? "active" : ""
+                }`}
+              >
+                <img src={img} alt="" />
 
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">اختر التصنيف</option>
-            {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
-          </select>
+                {i === mainIndex && (
+                  <span className="main-badge">Main</span>
+                )}
 
-          <select value={condition} onChange={(e) => setCondition(e.target.value)}>
-            <option value="">اختر حالة المنتج</option>
-            {conditions.map((cond) => <option key={cond} value={cond}>{cond}</option>)}
-          </select>
+                <button
+                  type="button"
+                  className="main-btn"
+                  onClick={() => setMainImage(i)}
+                >
+                  ⭐
+                </button>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "جاري الإرسال..." : "إرسال للمراجعة"}
+                <button
+                  type="button"
+                  className="remove-img"
+                  onClick={() => removeImage(i)}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <textarea
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+
+          <div className="grid-2">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="">Category</option>
+              {categories.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+
+            <select
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
+            >
+              <option value="">Condition</option>
+              {conditions.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <button disabled={loading}>
+            {loading ? "Posting..." : "Post Product"}
           </button>
+
         </form>
       </div>
     </div>

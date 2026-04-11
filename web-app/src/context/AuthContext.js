@@ -1,42 +1,53 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
-import { doc, getDoc } from "firebase/firestore";
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    // مراقبة تسجيل الدخول / الخروج
+    const unsubAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
 
-      if (currentUser) {
-        try {
-          const docRef = doc(db, "userProfiles", currentUser.uid);
-          const docSnap = await getDoc(docRef);
+      if (!currentUser) {
+        setRole(null);
+        setLoading(false);
+        return;
+      }
 
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setRole(data.role || "user"); // 👈 هنا الصح
+      setLoading(true);
+
+      // 👇 هنا بنراقب userProfiles بشكل مباشر (Realtime)
+      const userRef = doc(db, "userProfiles", currentUser.uid);
+
+      const unsubProfile = onSnapshot(
+        userRef,
+        (snap) => {
+          if (snap.exists()) {
+            setRole(snap.data().role || "user");
           } else {
             setRole("user");
           }
-        } catch (err) {
-          console.error("Error fetching role:", err);
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Error fetching role:", error);
           setRole("user");
+          setLoading(false);
         }
-      } else {
-        setRole(null);
-      }
+      );
 
-      setLoading(false);
+      // تنظيف الـ listener بتاع profile
+      return () => unsubProfile();
     });
 
-    return () => unsubscribe();
+    return () => unsubAuth();
   }, []);
 
   return (
@@ -44,6 +55,6 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => useContext(AuthContext);

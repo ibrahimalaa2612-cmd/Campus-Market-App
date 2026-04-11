@@ -1,171 +1,376 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
-import { collection, getDocs, updateDoc, doc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  doc,
+  deleteDoc,
+} from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import "../styles/MyProducts.css";
 
+const DEFAULT_IMAGE =
+  "https://i.postimg.cc/FKMdfByG/download.jpg";
+
 export default function MyProducts() {
   const { user } = useAuth();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  // Modal states
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState(null);
-  const [formData, setFormData] = useState({
+
+  const [form, setForm] = useState({
     name: "",
     price: "",
+    description: "",
     category: "",
     condition: "",
-    image: ""
+    images: [],
+    newImages: [],
+    previews: [],
   });
 
+  /* ================= FETCH ================= */
   const fetchProducts = async () => {
     setLoading(true);
+
     try {
-      const snapshot = await getDocs(collection(db, "products"));
-      const items = snapshot.docs
-        .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+      const snap = await getDocs(collection(db, "products"));
+
+      const items = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
         .filter(
           (p) =>
             p.sellerId === user.uid &&
             (p.status === "approved" || p.status === "rejected")
         );
+
       setProducts(items);
     } catch (err) {
-      console.error(err);
+      console.log(err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const markAsSold = async (id) => {
-    await updateDoc(doc(db, "products", id), { sold: true });
-    fetchProducts();
-  };
-
-  const deleteProduct = async (id) => {
-    if (window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-      await deleteDoc(doc(db, "products", id));
-      fetchProducts();
-    }
-  };
-
-  // فتح الـ Modal
-  const openModal = (product) => {
-    setCurrentProduct(product);
-    setFormData({
-      name: product.name,
-      price: product.price,
-      category: product.category,
-      condition: product.condition,
-      image: product.image
-    });
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setCurrentProduct(null);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleUpdate = async () => {
-    if (!currentProduct) return;
-
-    await updateDoc(doc(db, "products", currentProduct.id), {
-      ...formData,
-      status: "pending"
-    });
-    fetchProducts();
-    closeModal();
   };
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  /* ================= DELETE ================= */
+  const handleDelete = async (id) => {
+    if (window.confirm("Delete product?")) {
+      await deleteDoc(doc(db, "products", id));
+      fetchProducts();
+    }
+  };
+
+  /* ================= SOLD ================= */
+  const handleSold = async (id) => {
+    await updateDoc(doc(db, "products", id), {
+      sold: true,
+    });
+
+    fetchProducts();
+  };
+
+  /* ================= OPEN MODAL ================= */
+  const openModal = (product) => {
+    setSelectedProduct(product);
+
+    setForm({
+      name: product.name || "",
+      price: product.price || "",
+      description: product.description || "",
+      category: product.category || "",
+      condition: product.condition || "",
+      images: product.images || [],
+      newImages: [],
+      previews: [],
+    });
+
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedProduct(null);
+  };
+
+  /* ================= HANDLE INPUT ================= */
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  /* ================= ADD NEW IMAGES ================= */
+  const handleAddImages = (e) => {
+    const files = Array.from(e.target.files);
+
+    setForm((prev) => ({
+      ...prev,
+      newImages: [...prev.newImages, ...files],
+      previews: [
+        ...prev.previews,
+        ...files.map((f) => URL.createObjectURL(f)),
+      ],
+    }));
+  };
+
+  /* ================= REMOVE OLD IMAGE ================= */
+  const removeOldImage = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+  };
+
+  /* ================= REMOVE NEW IMAGE ================= */
+  const removeNewImage = (index) => {
+    setForm((prev) => {
+      const files = [...prev.newImages];
+      const prevs = [...prev.previews];
+
+      files.splice(index, 1);
+      prevs.splice(index, 1);
+
+      return {
+        ...prev,
+        newImages: files,
+        previews: prevs,
+      };
+    });
+  };
+
+  /* ================= CLOUDINARY ================= */
+  const uploadToCloudinary = async (file) => {
+    const data = new FormData();
+
+    data.append("file", file);
+    data.append("upload_preset", "market_upload");
+    data.append("cloud_name", "dkytpqkgd");
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dkytpqkgd/image/upload",
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const result = await res.json();
+    return result.secure_url;
+  };
+
+  /* ================= UPDATE ================= */
+  const handleUpdate = async () => {
+    let finalImages = [...form.images];
+
+    if (form.newImages.length > 0) {
+      const uploaded = await Promise.all(
+        form.newImages.map(uploadToCloudinary)
+      );
+
+      finalImages = [...finalImages, ...uploaded];
+    }
+
+    await updateDoc(doc(db, "products", selectedProduct.id), {
+      name: form.name,
+      price: Number(form.price),
+      description: form.description,
+      category: form.category,
+      condition: form.condition,
+      images: finalImages,
+      image: finalImages[0] || DEFAULT_IMAGE,
+      status: "pending",
+    });
+
+    fetchProducts();
+    closeModal();
+  };
+
+  /* ================= UI ================= */
   return (
-    <div className="my-products-container">
-      <h2>منتجاتي</h2>
-      {loading ? (
-        <p>جاري التحميل...</p>
-      ) : (
-        <div className="products-grid">
-          {products.map((product) => (
-            <div key={product.id} className="product-card">
-              <img src={product.image} alt={product.name} />
-              <h3>{product.name}</h3>
-              <p className="price">{product.price} EGP</p>
-              <p className="category">{product.category} - {product.condition}</p>
-              <p className="date">تاريخ الإضافة: {product.createdAt?.toDate().toLocaleDateString()}</p>
+    <div className="home">
 
-              {product.status === "rejected" && <span className="rejected-badge">تم الرفض</span>}
-              {product.sold && <span className="sold-badge">تم البيع</span>}
+      <div className="page-header">
+        <h2>My Products</h2>
+        <p>Manage your listings</p>
+      </div>
 
-              <div className="actions">
-                {!product.sold && (
-                  <>
-                    <button onClick={() => markAsSold(product.id)} className="sold-btn">تم البيع</button>
-                    <button onClick={() => openModal(product)} className="edit-btn">تعديل</button>
-                    <button onClick={() => deleteProduct(product.id)} className="delete-btn">حذف</button>
-                  </>
+      <div className="layout">
+        <section className="grid">
+
+          {loading ? (
+            <div className="empty">Loading...</div>
+          ) : (
+            products.map((p) => (
+              <div className="card" key={p.id}>
+
+                {p.sold && (
+                  <span className="badge">SOLD</span>
                 )}
+
+                <img
+                  src={p.image || DEFAULT_IMAGE}
+                  alt=""
+                />
+
+                <div className="card-body">
+
+                  <h3>{p.name}</h3>
+
+                  <p className="price">
+                    {p.price} EGP
+                  </p>
+
+                  <p className="meta">
+                    {p.category}
+                  </p>
+
+                  <p className="meta">
+                    {p.condition}
+                  </p>
+
+                  <div className="actions">
+
+                    {!p.sold && (
+                      <>
+                        <button
+                          className="btn green"
+                          onClick={() =>
+                            handleSold(p.id)
+                          }
+                        >
+                          Sold
+                        </button>
+
+                        <button
+                          className="btn blue"
+                          onClick={() =>
+                            openModal(p)
+                          }
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          className="btn red"
+                          onClick={() =>
+                            handleDelete(p.id)
+                          }
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))
+          )}
+        </section>
+      </div>
 
-      {/* Modal */}
+      {/* ================= MODAL ================= */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>تعديل المنتج</h3>
+        <div
+          className="modal-overlay"
+          onClick={closeModal}
+        >
+          <div
+            className="modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
 
-            <label>الاسم:</label>
-            <input name="name" value={formData.name} onChange={handleChange} />
+            <h3>Edit Product</h3>
 
-            <label>السعر:</label>
-            <input name="price" value={formData.price} onChange={handleChange} type="number" />
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Name"
+            />
 
-            <label>الفئة:</label>
-            <select name="category" value={formData.category} onChange={handleChange}>
-              <option value="">اختر الفئة</option>
-              <option value="كتب و مراجع">كتب و مراجع</option>
-              <option value="أجهزة إلكترونية">أجهزة إلكترونية</option>
-              <option value="ملابس و إكسسوارات">ملابس و إكسسوارات</option>
-              <option value="أدوات مدرسية">أدوات مدرسية</option>
-              <option value="أدوات منزلية صغيرة">أدوات منزلية صغيرة</option>
-              <option value="مستلزمات رياضية">مستلزمات رياضية</option>
-              <option value="معدات كمبيوتر">معدات كمبيوتر</option>
-              <option value="أجهزة منزلية">أجهزة منزلية</option>
-              <option value="خدمات">خدمات</option>
-              <option value="أخرى">أخرى</option>
-            </select>
+            <input
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              placeholder="Price"
+            />
 
-            <label>الحالة الفيزيائية:</label>
-            <select name="condition" value={formData.condition} onChange={handleChange}>
-              <option value="">اختر الحالة</option>
-              <option value="جديد">جديد</option>
-              <option value="مستعمل">مستعمل</option>
-              <option value="مستعمل - يشبه الجديد">مستعمل - يشبه الجديد</option>
-            </select>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Description"
+            />
 
-            <label>رابط الصورة:</label>
-            <input name="image" value={formData.image} onChange={handleChange} type="url" />
+            {/* OLD IMAGES */}
+            <div className="img-row">
+              {form.images.map((img, i) => (
+                <div key={i} className="img-box">
+                  <img src={img} />
+                  <button
+                    onClick={() =>
+                      removeOldImage(i)
+                    }
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* NEW IMAGES */}
+            <input
+              type="file"
+              multiple
+              onChange={handleAddImages}
+            />
+
+            <div className="img-row">
+              {form.previews.map((img, i) => (
+                <div key={i} className="img-box">
+                  <img src={img} />
+                  <button
+                    onClick={() =>
+                      removeNewImage(i)
+                    }
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
 
             <div className="modal-actions">
-              <button onClick={handleUpdate} className="edit-btn">حفظ التعديلات</button>
-              <button onClick={closeModal} className="delete-btn">إلغاء</button>
+
+              <button
+                className="btn green"
+                onClick={handleUpdate}
+              >
+                Save
+              </button>
+
+              <button
+                className="btn red"
+                onClick={closeModal}
+              >
+                Cancel
+              </button>
+
             </div>
+
           </div>
         </div>
       )}
+
     </div>
   );
 }
