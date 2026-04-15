@@ -20,7 +20,6 @@ export default function Navbar() {
   const [products, setProducts] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  /* ================= FETCH PRODUCTS ================= */
   useEffect(() => {
     const fetchProducts = async () => {
       const snapshot = await getDocs(collection(db, "products"));
@@ -34,7 +33,6 @@ export default function Navbar() {
     fetchProducts();
   }, []);
 
-  /* ================= PROFILE IMAGE ================= */
   useEffect(() => {
     if (!user) return;
 
@@ -50,13 +48,11 @@ export default function Navbar() {
     fetchProfileImage();
   }, [user]);
 
-  /* ================= LOGOUT ================= */
   const handleLogout = async () => {
     await signOut(auth);
     navigate("/login");
   };
 
-  /* ================= OUTSIDE CLICK ================= */
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -68,7 +64,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /* ================= SEARCH ================= */
   const suggestions = useMemo(() => {
     if (!search.trim()) return [];
 
@@ -76,7 +71,7 @@ export default function Navbar() {
       .filter((p) =>
         p.name?.toLowerCase().includes(search.toLowerCase())
       )
-      .slice(0, 5); // limit 5 results
+      .slice(0, 5);
   }, [search, products]);
 
   const handleSearchEnter = (e) => {
@@ -92,14 +87,11 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-inner">
 
-        {/* LOGO */}
         <Link to="/" className="logo">
           <img src="/logo-campus-market.png" alt="logo" />
         </Link>
 
-        {/* SEARCH */}
         <div className="search-wrapper">
-
           <input
             type="text"
             placeholder="Search products..."
@@ -112,7 +104,6 @@ export default function Navbar() {
             onFocus={() => setShowSuggestions(true)}
           />
 
-          {/* SUGGESTIONS */}
           {showSuggestions && suggestions.length > 0 && (
             <div className="suggestions">
               {suggestions.map((item) => (
@@ -132,8 +123,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* LINKS */}
-        <div className="nav-links">
+        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
           <Link to="/" className="link">Home</Link>
 
           {user && (
@@ -141,10 +131,6 @@ export default function Navbar() {
               My Ads
             </Link>
           )}
-        </div>
-
-        {/* ACTIONS */}
-        <div className="actions">
 
           {user && (
             <Link to="/sell" className="sell-btn">
@@ -153,18 +139,19 @@ export default function Navbar() {
           )}
 
           {!user ? (
-            <>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <Link to="/login" className="link">Login</Link>
               <Link to="/register" className="link primary">
                 Sign Up
               </Link>
-            </>
+            </div>
           ) : (
             <div className="profile" ref={dropdownRef}>
               <img
                 src={profileImage}
                 className="avatar"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
+                alt="profile"
               />
 
               <div className={`dropdown ${dropdownOpen ? "open" : ""}`}>
@@ -182,8 +169,8 @@ export default function Navbar() {
               </div>
             </div>
           )}
-
         </div>
+
       </div>
     </nav>
   );
