@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -10,6 +10,7 @@ import "../styles/Navbar.css";
 export default function Navbar() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -19,6 +20,8 @@ export default function Navbar() {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const hideSearch = location.pathname === "/login" || location.pathname === "/register";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -91,59 +94,56 @@ export default function Navbar() {
           <img src="/logo-campus-market.png" alt="logo" />
         </Link>
 
-        <div className="search-wrapper">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setShowSuggestions(true);
-            }}
-            onKeyDown={handleSearchEnter}
-            onFocus={() => setShowSuggestions(true)}
-          />
+        {!hideSearch && (
+          <div className="search-wrapper">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onKeyDown={handleSearchEnter}
+              onFocus={() => setShowSuggestions(true)}
+            />
 
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="suggestions">
-              {suggestions.map((item) => (
-                <div
-                  key={item.id}
-                  className="suggestion-item"
-                  onClick={() => {
-                    navigate(`/product/${item.id}`);
-                    setSearch("");
-                    setShowSuggestions(false);
-                  }}
-                >
-                  {item.name}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="suggestions">
+                {suggestions.map((item) => (
+                  <div
+                    key={item.id}
+                    className="suggestion-item"
+                    onClick={() => {
+                      navigate(`/product/${item.id}`);
+                      setSearch("");
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    {item.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          
           <Link to="/" className="link">Home</Link>
 
           {user && (
-            <Link to="/myProducts" className="link">
-              My Ads
-            </Link>
+            <Link to="/myProducts" className="link">My Ads</Link>
           )}
 
           {user && (
-            <Link to="/sell" className="sell-btn">
-              + Sell
-            </Link>
+            <Link to="/sell" className="sell-btn">+ Sell</Link>
           )}
 
           {!user ? (
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <Link to="/login" className="link">Login</Link>
-              <Link to="/register" className="link primary">
-                Sign Up
-              </Link>
+              <Link to="/register" className="link primary">Sign Up</Link>
             </div>
           ) : (
             <div className="profile" ref={dropdownRef}>
@@ -151,26 +151,21 @@ export default function Navbar() {
                 src={profileImage}
                 className="avatar"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                alt="profile"
+                alt="Profile"
               />
 
               <div className={`dropdown ${dropdownOpen ? "open" : ""}`}>
                 <Link to="/profile">Profile</Link>
-
                 {role === "admin" && (
                   <Link to="/dashboard">Dashboard</Link>
                 )}
-
                 <Link to="/settings">Settings</Link>
-
-                <button onClick={handleLogout}>
-                  Logout
-                </button>
+                <button onClick={handleLogout}>Logout</button>
               </div>
             </div>
           )}
-        </div>
 
+        </div>
       </div>
     </nav>
   );
