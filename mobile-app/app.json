@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "e2f566de-1da9-4fc7-b456-13d01833f1ec"
+      }
+    },
+    "android": {
+      "package": "com.ibrahimalaa.campusmarket"
+    }
+  }
+}
