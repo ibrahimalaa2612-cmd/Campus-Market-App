@@ -7,6 +7,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { getAuth } from "firebase/auth";
 import { db } from "../../services/firebase";
 import { Ionicons } from "@expo/vector-icons";
+import { useCart } from "../../context/CartContext";
 import styles from "../../styles/productDetailStyles";
 
 export default function ProductDetailScreen({ route, navigation }) {
@@ -14,6 +15,7 @@ export default function ProductDetailScreen({ route, navigation }) {
 
   const [product, setProduct] = useState(null);
   const [seller, setSeller] = useState(null);
+  const [sellerId, setSellerId] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [showPhone, setShowPhone] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
@@ -22,6 +24,9 @@ export default function ProductDetailScreen({ route, navigation }) {
   const auth = getAuth();
   const currentUserId = auth.currentUser?.uid;
   const DEFAULT_IMAGE = "https://i.postimg.cc/FKMdfByG/download.jpg";
+
+  const { cart, addToCart } = useCart();
+  const isInCart = cart?.some((item) => item.id === id);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,6 +37,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         setProduct(data);
 
         if (data.sellerId) {
+          setSellerId(data.sellerId);
           const sellerSnap = await getDoc(doc(db, "userProfiles", data.sellerId));
           if (sellerSnap.exists()) setSeller(sellerSnap.data());
         }
@@ -41,7 +47,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         );
         const reviewsData = reviewsSnap.docs
           .map(d => ({ id: d.id, ...d.data() }))
-          .filter(r => r.comment && r.comment.trim() !== '');
+          .filter(r => r.comment && r.comment.trim() !== "");
         setReviews(reviewsData);
 
       } catch (err) {
@@ -52,6 +58,19 @@ export default function ProductDetailScreen({ route, navigation }) {
     };
     fetchData();
   }, [id]);
+
+  const handleAddToCart = async () => {
+    if (isInCart || !product) return;
+    await addToCart({
+      id,
+      name: product.name || "منتج",
+      price: product.price || 0,
+      image: product.images?.[0] || product.image || "",
+      sellerName: seller?.fullName || "Unknown",
+      category: product.category || "",
+      condition: product.condition || "",
+    });
+  };
 
   if (loading) {
     return (
@@ -110,7 +129,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         <Text style={styles.price}>{product.price} EGP</Text>
         <Text style={styles.title}>{product.name}</Text>
         {avgProductRating && (
-          <Text style={{ color: '#f59e0b', fontWeight: 'bold', marginTop: 4 }}>
+          <Text style={{ color: "#f59e0b", fontWeight: "bold", marginTop: 4 }}>
             ⭐ {avgProductRating} / 5
           </Text>
         )}
@@ -133,15 +152,15 @@ export default function ProductDetailScreen({ route, navigation }) {
       {/* ====== البائع ====== */}
       <View style={[styles.box, styles.sellerBox]}>
         <TouchableOpacity
-          onPress={() => navigation.navigate('SellerProfile', { sellerId: product.sellerId })}
-          style={{ alignItems: 'center', width: '100%' }}
+          onPress={() => navigation.navigate("SellerProfile", { sellerId: product.sellerId })}
+          style={{ alignItems: "center", width: "100%" }}
         >
           <Image
             source={{ uri: seller?.imageUrl || DEFAULT_IMAGE }}
             style={styles.sellerImg}
           />
           <Text style={styles.sellerName}>{seller?.fullName}</Text>
-          <Text style={{ color: '#007BFF', marginTop: 4, marginBottom: 8 }}>
+          <Text style={{ color: "#007BFF", marginTop: 4, marginBottom: 8 }}>
             عرض صفحة البائع ←
           </Text>
         </TouchableOpacity>
@@ -149,17 +168,40 @@ export default function ProductDetailScreen({ route, navigation }) {
         <Text style={styles.sellerMeta}>Member</Text>
 
         {!product.sold ? (
-          <TouchableOpacity
-            style={styles.phoneBtn}
-            onPress={() => {
-              if (showPhone && seller?.phone) Linking.openURL(`tel:${seller.phone}`);
-              else setShowPhone(true);
-            }}
-          >
-            <Text style={styles.phoneText}>
-              {showPhone ? seller?.phone : "Show Phone Number"}
-            </Text>
-          </TouchableOpacity>
+          <>
+            {/* زرار إضافة للسلة — يختفي لو البائع هو نفسه */}
+            {currentUserId !== sellerId && (
+              <TouchableOpacity
+                style={[
+                  cartBtnStyle.btn,
+                  isInCart && cartBtnStyle.btnAdded,
+                ]}
+                onPress={handleAddToCart}
+                disabled={isInCart}
+              >
+                <Ionicons
+                  name={isInCart ? "checkmark-circle" : "cart"}
+                  size={18}
+                  color="#fff"
+                />
+                <Text style={cartBtnStyle.text}>
+                  {isInCart ? "✓ في السلة" : "🛒 إضافة للسلة"}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={styles.phoneBtn}
+              onPress={() => {
+                if (showPhone && seller?.phone) Linking.openURL(`tel:${seller.phone}`);
+                else setShowPhone(true);
+              }}
+            >
+              <Text style={styles.phoneText}>
+                {showPhone ? seller?.phone : "Show Phone Number"}
+              </Text>
+            </TouchableOpacity>
+          </>
         ) : (
           <Text style={styles.sold}>SOLD</Text>
         )}
@@ -167,15 +209,15 @@ export default function ProductDetailScreen({ route, navigation }) {
         {currentUserId !== product.sellerId && (
           <TouchableOpacity
             style={{
-              backgroundColor: '#007BFF', padding: 15, borderRadius: 10,
-              marginTop: 15, width: '100%', alignItems: 'center'
+              backgroundColor: "#007BFF", padding: 15, borderRadius: 10,
+              marginTop: 15, width: "100%", alignItems: "center",
             }}
-            onPress={() => navigation.navigate('AddReview', {
+            onPress={() => navigation.navigate("AddReview", {
               sellerId: product.sellerId,
-              productId: id
+              productId: id,
             })}
           >
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
+            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
               تقييم البائع والمنتج
             </Text>
           </TouchableOpacity>
@@ -190,18 +232,18 @@ export default function ProductDetailScreen({ route, navigation }) {
           </Text>
           {reviews.map(review => (
             <View key={review.id} style={{
-              borderTopWidth: 1, borderTopColor: '#f0f0f0',
-              paddingTop: 12, marginTop: 12
+              borderTopWidth: 1, borderTopColor: "#f0f0f0",
+              paddingTop: 12, marginTop: 12,
             }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text style={{ fontWeight: 'bold', color: '#1a1a1a' }}>
-                  {review.reviewerName || 'مجهول'}
+              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                <Text style={{ fontWeight: "bold", color: "#1a1a1a" }}>
+                  {review.reviewerName || "مجهول"}
                 </Text>
-                <Text style={{ color: '#f59e0b' }}>
-                  {'⭐'.repeat(review.productRating || 0)}
+                <Text style={{ color: "#f59e0b" }}>
+                  {"⭐".repeat(review.productRating || 0)}
                 </Text>
               </View>
-              <Text style={{ color: '#444', fontSize: 14 }}>{review.comment}</Text>
+              <Text style={{ color: "#444", fontSize: 14 }}>{review.comment}</Text>
             </View>
           ))}
         </View>
@@ -211,3 +253,26 @@ export default function ProductDetailScreen({ route, navigation }) {
     </ScrollView>
   );
 }
+
+const cartBtnStyle = {
+  btn: {
+    flexDirection: "row",
+    backgroundColor: "#16a34a",
+    padding: 14,
+    borderRadius: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  btnAdded: {
+    backgroundColor: "#6b7280",
+  },
+  text: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
+  },
+};

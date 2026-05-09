@@ -3,10 +3,12 @@ import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
 export default function BottomNavbar() {
   const navigation = useNavigation();
   const { role, logout } = useAuth();
+  const { totalItems } = useCart();
   const [openMenu, setOpenMenu] = useState(false);
   const isAdmin = role === "admin";
 
@@ -50,43 +52,42 @@ export default function BottomNavbar() {
       )}
 
       <View style={styles.navbar}>
-        <TouchableOpacity
-          style={styles.item}
-          onPress={() => navigation.navigate("Home")}
-        >
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Home")}>
           <Ionicons name="home" size={24} color="#16a34a" />
           <Text style={styles.text}>Home</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.item}
-          onPress={() => navigation.navigate("Sell")}
-        >
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Sell")}>
           <Ionicons name="add-circle" size={28} color="#16a34a" />
           <Text style={styles.text}>Sell</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.item}
-          onPress={() => navigation.navigate("MyProducts")}
-        >
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("MyProducts")}>
           <Ionicons name="list" size={24} color="#16a34a" />
           <Text style={styles.text}>My Ads</Text>
         </TouchableOpacity>
 
-        {/* زرار الشات بوت */}
-        <TouchableOpacity
-          style={styles.item}
-          onPress={() => navigation.navigate("ChatBot")}
-        >
+        {/* ── زرار السلة مع badge ── */}
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cart")}>
+          <View>
+            <Ionicons name="cart" size={24} color="#16a34a" />
+            {totalItems > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {totalItems > 99 ? "99+" : totalItems}
+                </Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.text}>السلة</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("ChatBot")}>
           <Ionicons name="chatbubble-ellipses" size={24} color="#16a34a" />
           <Text style={styles.text}>مساعد</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.item}
-          onPress={() => setOpenMenu(!openMenu)}
-        >
+        <TouchableOpacity style={styles.item} onPress={() => setOpenMenu(!openMenu)}>
           <Ionicons name="settings" size={24} color="#16a34a" />
           <Text style={styles.text}>Settings</Text>
         </TouchableOpacity>
@@ -113,15 +114,8 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-  item: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    fontSize: 11,
-    color: "#374151",
-    marginTop: 2,
-  },
+  item: { alignItems: "center", justifyContent: "center" },
+  text: { fontSize: 11, color: "#374151", marginTop: 2 },
   menu: {
     position: "absolute",
     bottom: 80,
@@ -135,14 +129,20 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 12,
   },
-  menuItem: {
-    flexDirection: "row",
+  menuItem: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 8 },
+  menuText: { fontSize: 13, color: "#111" },
+
+  badge: {
+    position: "absolute",
+    top: -6,
+    right: -8,
+    backgroundColor: "#ef4444",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
     alignItems: "center",
-    gap: 8,
-    paddingVertical: 8,
+    paddingHorizontal: 3,
   },
-  menuText: {
-    fontSize: 13,
-    color: "#111",
-  },
+  badgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
 });

@@ -1,33 +1,25 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { db } from "../services/firebase";
 import { useAuth } from "./AuthContext";
- 
+
 const CartContext = createContext(null);
- 
+
 export const CartProvider = ({ children }) => {
   const { user } = useAuth();
   const [cart, setCart] = useState([]);
   const [cartLoading, setCartLoading] = useState(true);
- 
-  // ─── مزامنة الكارت مع Firestore ───────────────────────────────────────
+
   useEffect(() => {
     if (!user) {
-      // لو مفيش يوزر: استخدم localStorage كـ fallback
-      try {
-        const saved = localStorage.getItem("cart");
-        setCart(saved ? JSON.parse(saved) : []);
-      } catch {
-        setCart([]);
-      }
+      setCart([]);
       setCartLoading(false);
       return;
     }
- 
-    // يوزر مسجّل → اشترك في Firestore real-time
+
     setCartLoading(true);
     const cartRef = doc(db, "carts", user.uid);
- 
+
     const unsub = onSnapshot(
       cartRef,
       (snap) => {
@@ -43,25 +35,20 @@ export const CartProvider = ({ children }) => {
         setCartLoading(false);
       }
     );
- 
+
     return () => unsub();
   }, [user]);
- 
-  // ─── حفظ الكارت (Firestore أو localStorage) ──────────────────────────
+
   const persistCart = async (newCart) => {
-    if (user) {
-      const cartRef = doc(db, "carts", user.uid);
-      await setDoc(cartRef, { items: newCart }, { merge: true });
-    } else {
-      localStorage.setItem("cart", JSON.stringify(newCart));
-    }
+    if (!user) return;
+    const cartRef = doc(db, "carts", user.uid);
+    await setDoc(cartRef, { items: newCart }, { merge: true });
   };
- 
-  // ─── إضافة منتج ──────────────────────────────────────────────────────
+
   const addToCart = async (product) => {
     const cleanProduct = {
       id: String(product.id || ""),
-      name: String(product.name || product.title || "منتج"),
+      name: String(product.name || "منتج"),
       price: Number(product.price || 0),
       image: String(product.images?.[0] || product.image || ""),
       quantity: 1,
@@ -69,7 +56,7 @@ export const CartProvider = ({ children }) => {
       category: String(product.category || ""),
       condition: String(product.condition || ""),
     };
- 
+
     const existing = cart.find((item) => item.id === cleanProduct.id);
     let newCart;
     if (existing) {
@@ -81,19 +68,17 @@ export const CartProvider = ({ children }) => {
     } else {
       newCart = [...cart, cleanProduct];
     }
- 
+
     setCart(newCart);
     await persistCart(newCart);
   };
- 
-  // ─── حذف منتج ────────────────────────────────────────────────────────
+
   const removeFromCart = async (productId) => {
     const newCart = cart.filter((item) => item.id !== productId);
     setCart(newCart);
     await persistCart(newCart);
   };
- 
-  // ─── تعديل الكمية ────────────────────────────────────────────────────
+
   const updateQuantity = async (productId, quantity) => {
     if (quantity <= 0) {
       await removeFromCart(productId);
@@ -105,35 +90,22 @@ export const CartProvider = ({ children }) => {
     setCart(newCart);
     await persistCart(newCart);
   };
- 
-  // ─── مسح الكارت ──────────────────────────────────────────────────────
+
   const clearCart = async () => {
     setCart([]);
     await persistCart([]);
   };
- 
-  const totalPrice = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+
+  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
- 
+
   return (
     <CartContext.Provider
-      value={{
-        cart,
-        cartLoading,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        totalPrice,
-        totalItems,
-      }}
+      value={{ cart, cartLoading, addToCart, removeFromCart, updateQuantity, clearCart, totalPrice, totalItems }}
     >
       {children}
     </CartContext.Provider>
   );
 };
- 
+
 export const useCart = () => useContext(CartContext);
