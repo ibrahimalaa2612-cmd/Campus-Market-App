@@ -5,8 +5,7 @@ import {
   KeyboardAvoidingView, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY;
 
 const SYSTEM_PROMPT = `أنت مساعد ذكي لتطبيق Campus Market، سوق إلكتروني للطلاب الجامعيين في مصر.
 مهمتك الإجابة على أسئلة الزوار والمستخدمين باللغة العربية بشكل ودي ومختصر.
