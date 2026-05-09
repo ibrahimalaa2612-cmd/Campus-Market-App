@@ -11,7 +11,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // مراقبة تسجيل الدخول / الخروج
     const unsubAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
 
@@ -23,12 +22,17 @@ export const AuthProvider = ({ children }) => {
 
       setLoading(true);
 
-      // 👇 هنا بنراقب userProfiles بشكل مباشر (Realtime)
       const userRef = doc(db, "userProfiles", currentUser.uid);
+
+      const timeout = setTimeout(() => {
+        setRole("user");
+        setLoading(false);
+      }, 3000);
 
       const unsubProfile = onSnapshot(
         userRef,
         (snap) => {
+          clearTimeout(timeout);
           if (snap.exists()) {
             setRole(snap.data().role || "user");
           } else {
@@ -37,14 +41,17 @@ export const AuthProvider = ({ children }) => {
           setLoading(false);
         },
         (error) => {
+          clearTimeout(timeout);
           console.error("Error fetching role:", error);
           setRole("user");
           setLoading(false);
         }
       );
 
-      // تنظيف الـ listener بتاع profile
-      return () => unsubProfile();
+      return () => {
+        clearTimeout(timeout);
+        unsubProfile();
+      };
     });
 
     return () => unsubAuth();

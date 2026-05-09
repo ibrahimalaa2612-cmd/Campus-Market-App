@@ -15,6 +15,29 @@ body {
 }
 
 /* BOX */
+.add-to-cart-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+
+.add-to-cart-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #15803d, #16a34a);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.add-to-cart-btn.added {
+  background: linear-gradient(135deg, #10b981, #34d399);
+}
 .box {
   background: #fff;
   border-radius: 14px;
@@ -34,12 +57,14 @@ body {
 .image-box {
   padding: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .main-img {
   width: 100%;
   height: 460px;
   object-fit: cover;
+  display: block;
 }
 
 /* THUMBS */
@@ -73,7 +98,6 @@ body {
   margin: 0;
 }
 
-/* PRODUCT NAME */
 .product-name {
   margin: 8px 0;
   font-size: 20px;
@@ -176,72 +200,45 @@ body {
   color: #666;
 }
 
-/* لازم الصورة تبقى relative container للأسهم */
-.image-box {
-  position: relative;
-}
-
-/* تحسين بسيط للصورة (بدون تغيير الشكل) */
-.main-img {
-  display: block;
-}
-
-/* ===== ARROWS ===== */
+/* ARROWS */
 .img-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-
   width: 38px;
   height: 38px;
-
   border: none;
   border-radius: 50%;
-
   background: rgba(0, 0, 0, 0.25);
   color: #fff;
   font-size: 18px;
   cursor: pointer;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   opacity: 0;
   transition: 0.2s ease;
   z-index: 5;
 }
 
-/* مكانهم الصح */
-.img-btn.left {
-  left: 10px;
-}
+.img-btn.left { left: 10px; }
+.img-btn.right { right: 10px; }
 
-.img-btn.right {
-  right: 10px;
-}
+.image-box:hover .img-btn { opacity: 1; }
 
-/* يظهروا بس عند hover على الصورة */
-.image-box:hover .img-btn {
-  opacity: 1;
-}
-
-/* hover احترافي بسيط */
 .img-btn:hover {
   background: rgba(0, 0, 0, 0.45);
   transform: translateY(-50%) scale(1.1);
 }
 
-/* تحسين dots لو موجودة */
+/* DOTS */
 .dots {
   position: absolute;
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-
   display: flex;
   gap: 6px;
-
   background: rgba(0, 0, 0, 0.25);
   padding: 5px 10px;
   border-radius: 20px;
@@ -255,6 +252,171 @@ body {
   cursor: pointer;
 }
 
-.dot.active {
-  background: #fff;
+.dot.active { background: #fff; }
+
+/* ===================== REVIEWS ===================== */
+
+/* Stars */
+.stars-row {
+  display: flex;
+  gap: 4px;
+  direction: ltr;
+}
+
+.star {
+  font-size: 26px;
+  color: #d1d5db;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+  user-select: none;
+}
+
+.star.filled { color: #f59e0b; }
+.star:hover:not(.readonly) { transform: scale(1.2); }
+.star.readonly { cursor: default; font-size: 20px; }
+
+/* Average rating row */
+.avg-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.avg-rating-row.centered {
+  justify-content: center;
+}
+
+.avg-rating-text {
+  font-size: 13px;
+  color: #555;
+  font-weight: 600;
+}
+
+/* Review form */
+.review-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  border-bottom: 2px solid #ff6f00;
+  display: inline-block;
+  padding-bottom: 4px;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.review-textarea {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.review-textarea:focus { border-color: #ff6f00; }
+
+.review-error {
+  font-size: 13px;
+  color: #ef4444;
+  margin: 0;
+}
+
+.review-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #ff6f00, #ff8f00);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+  align-self: flex-start;
+}
+
+.review-btn:hover:not(:disabled) { transform: translateY(-2px); }
+.review-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Reviews list */
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.no-reviews {
+  color: #9ca3af;
+  font-size: 14px;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.review-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.review-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.review-content {
+  flex: 1;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.review-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.review-comment {
+  font-size: 13.5px;
+  color: #374151;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Seller rate box */
+.seller-rate-box {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.seller-rate-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0;
+}
+
+.muted {
+  font-size: 13px;
+  color: #9ca3af;
 }

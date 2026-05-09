@@ -1,142 +1,164 @@
-body {
-  margin: 0;
-  font-family: Poppins, sans-serif;
-  background: #f4f6fb;
+.public-profile { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+
+.pub-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-/* PAGE */
+.pub-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #16a34a; }
+.pub-info { flex: 1; }
+.pub-info h2 { font-size: 24px; margin: 0 0 6px 0; }
+.pub-uni { color: #666; margin: 4px 0; }
+.pub-bio { color: #444; margin: 8px 0; }
+.pub-date { color: #999; font-size: 13px; }
+
+.edit-profile-btn {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.edit-profile-btn:hover { background: #15803d; }
+
+.back-edit-btn {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.pub-products h3 { font-size: 20px; margin-bottom: 16px; }
+
+.pub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.pub-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: 0.2s;
+}
 .profile-page {
   max-width: 1000px;
-  margin: auto;
+  margin: 40px auto;
   padding: 20px;
 }
 
-/* HEADER */
+.profile-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
 .profile-header {
-  text-align: center;
-  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
 .profile-header h2 {
   margin: 0;
-  font-size: 24px;
-  color: #111827;
+  font-size: 26px;
 }
 
-.profile-header p {
-  color: #6b7280;
-}
-
-/* CARD */
-.profile-card {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-
-/* IMAGE */
 .profile-image {
-  width: 120px;
-  height: 120px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
   margin: 0 auto 20px;
-  border: 3px solid #16a34a;
+  border: 4px solid #16a34a;
+}
+.profile-rating {
+  margin: 8px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f59e0b;
 }
 
-/* FORM */
 .profile-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  margin-top: 20px;
 }
 
-/* GRID */
 .grid-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
 }
 
-/* FIELD */
 .field {
   display: flex;
   flex-direction: column;
 }
 
 .field label {
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 5px;
+  font-size: 14px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #444;
 }
 
 .field input,
-.field select,
 .field textarea {
-  padding: 10px;
+  padding: 12px;
+  border: 1px solid #ddd;
   border-radius: 10px;
-  border: 1px solid #e5e7eb;
+  font-size: 14px;
   outline: none;
 }
 
 .field textarea {
-  min-height: 90px;
-  resize: none;
+  min-height: 100px;
+  resize: vertical;
 }
 
-/* FULL WIDTH */
-.full {
-  grid-column: 1 / -1;
+.field.full {
+  margin-top: 18px;
 }
 
-/* BUTTON */
 .save-btn {
   background: #16a34a;
   color: white;
-  padding: 12px;
-  border-radius: 12px;
   border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s;
+  font-size: 14px;
+  margin-top: 20px;
 }
 
 .save-btn:hover {
   background: #15803d;
-  transform: translateY(-2px);
-}
-
-/* MESSAGES */
-.error {
-  color: #ef4444;
 }
 
 .success {
   color: #16a34a;
+  margin-top: 12px;
+  font-weight: bold;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
-}
-
-.profile-image {
-  transition: 0.3s;
-}
-
-.profile-image:hover {
-  transform: scale(1.05);
-}
-
-label[for="profileUpload"] {
-  display: inline-block;
-  transition: 0.2s;
-}
-
-label[for="profileUpload"]:hover {
-  background: #15803d;
-}
+.pub-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.pub-card img { width: 100%; height: 150px; object-fit: cover; }
+.pub-card-body { padding: 12px; }
+.pub-card-body h4 { margin: 0 0 4px 0; font-size: 15px; }
+.pub-card-body p { color: #16a34a; font-weight: bold; margin: 0; }

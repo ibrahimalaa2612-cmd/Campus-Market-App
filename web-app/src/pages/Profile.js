@@ -1,415 +1,191 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { formatDate } from "../utils/formatDate";
 import "../styles/Profile.css";
 
-/* ================= UNIVERSITIES ================= */
-const universitiesData = {
-  "جامعة القاهرة": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "التجارة",
-    "الحقوق",
-    "الآداب",
-    "الإعلام",
-    "الحاسبات والذكاء الاصطناعي",
-    "الزراعة",
-    "التمريض",
-    "طب الأسنان",
-  ],
+const DEFAULT_IMAGE = "https://i.postimg.cc/FKMdfByG/download.jpg";
 
-  "جامعة عين شمس": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "التجارة",
-    "الحقوق",
-    "الآداب",
-    "الحاسبات والمعلومات",
-    "التمريض",
-    "طب الأسنان",
-  ],
-
-  "جامعة الإسكندرية": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "الآداب",
-    "التجارة",
-    "الحقوق",
-    "الزراعة",
-    "التربية",
-  ],
-
-  "جامعة حلوان": [
-    "الهندسة",
-    "الفنون الجميلة",
-    "الفنون التطبيقية",
-    "التربية",
-    "الآداب",
-    "السياحة والفنادق",
-    "الحاسبات والذكاء الاصطناعي",
-  ],
-
-  "جامعة المنصورة": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "الآداب",
-    "الحقوق",
-    "التجارة",
-    "الزراعة",
-  ],
-
-  "جامعة أسيوط": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "الآداب",
-    "الحقوق",
-    "التجارة",
-  ],
-
-  "جامعة الزقازيق": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "الآداب",
-    "التجارة",
-    "الحقوق",
-  ],
-
-  "جامعة طنطا": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "الآداب",
-    "التجارة",
-    "الحقوق",
-  ],
-
-  "جامعة بني سويف": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "الآداب",
-    "التجارة",
-  ],
-
-  "جامعة المنيا": [
-    "الهندسة",
-    "الطب",
-    "الصيدلة",
-    "العلوم",
-    "الآداب",
-  ],
-
-  "جامعة كفر الشيخ": [
-    "الهندسة",
-    "الطب",
-    "العلوم",
-    "الآداب",
-    "التجارة",
-    "الزراعة",
-  ],
-
-  "جامعة الفيوم": [
-    "الهندسة",
-    "العلوم",
-    "الآداب",
-    "التربية",
-    "الخدمة الاجتماعية",
-  ],
-};
+/* ── نجوم التقييم ── */
+const StarRating = ({ rating }) => (
+  <div className="star-rating">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <span key={star} className={star <= Math.round(rating) ? "star filled" : "star"}>
+        ★
+      </span>
+    ))}
+  </div>
+);
 
 export default function Profile() {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const [profile, setProfile] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [editMode, setEditMode] = useState(false);
 
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [dob, setDob] = useState("");
   const [phone, setPhone] = useState("");
   const [university, setUniversity] = useState("");
   const [faculty, setFaculty] = useState("");
   const [studentId, setStudentId] = useState("");
   const [bio, setBio] = useState("");
-
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
-
-  const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
-  const defaultImage =
-    "https://i.ibb.co/4pDNDk1/default-profile.png";
-
-  /* ================= CLOUDINARY ================= */
-  const uploadToCloudinary = async (file) => {
-    const formData = new FormData();
-
-    formData.append("file", file);
-    formData.append("upload_preset", "market_upload");
-    formData.append("cloud_name", "dkytpqkgd");
-
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dkytpqkgd/image/upload",
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    const data = await res.json();
-
-    if (!data.secure_url) {
-      throw new Error("Upload failed");
-    }
-
-    return data.secure_url;
-  };
-
-  /* ================= LOAD ================= */
   useEffect(() => {
     if (!user) return;
-
-    const loadProfile = async () => {
-      const ref = doc(db, "userProfiles", user.uid);
-      const snap = await getDoc(ref);
-
+    const load = async () => {
+      const snap = await getDoc(doc(db, "userProfiles", user.uid));
       if (snap.exists()) {
         const data = snap.data();
-
+        setProfile(data);
         setFullName(data.fullName || "");
-        setEmail(data.email || user.email);
-        setDob(data.dob || "");
         setPhone(data.phone || "");
         setUniversity(data.university || "");
         setFaculty(data.faculty || "");
         setStudentId(data.studentId || "");
         setBio(data.bio || "");
         setImageUrl(data.imageUrl || "");
-      } else {
-        setEmail(user.email);
       }
+      const q = query(
+        collection(db, "products"),
+        where("sellerId", "==", user.uid),
+        where("status", "==", "approved")
+      );
+      const pSnap = await getDocs(q);
+      setProducts(pSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
     };
-
-    loadProfile();
+    load();
   }, [user]);
+
+  const uploadToCloudinary = async (file) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "market_upload");
+    data.append("cloud_name", "dkytpqkgd");
+    const res = await fetch("https://api.cloudinary.com/v1_1/dkytpqkgd/image/upload", {
+      method: "POST",
+      body: data,
+    });
+    const result = await res.json();
+    return result.secure_url;
+  };
+
+  const handleSave = async () => {
+    setLoadingSubmit(true);
+    try {
+      let uploadedImage = imageUrl;
+      if (imageFile) uploadedImage = await uploadToCloudinary(imageFile);
+      await setDoc(
+        doc(db, "userProfiles", user.uid),
+        { fullName, phone, university, faculty, studentId, bio, email: user.email, imageUrl: uploadedImage || DEFAULT_IMAGE },
+        { merge: true }
+      );
+      setImageUrl(uploadedImage);
+      setProfile((prev) => ({ ...prev, fullName, phone, university, faculty, studentId, bio, imageUrl: uploadedImage }));
+      setSuccessMsg("تم الحفظ ✅");
+      setEditMode(false);
+    } catch (err) {
+      console.log(err);
+    }
+    setLoadingSubmit(false);
+  };
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Login required</div>;
 
-  /* ================= SUBMIT ================= */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    setErrorMsg("");
-    setSuccessMsg("");
-    setLoadingSubmit(true);
-
-    try {
-      let uploadedImage = imageUrl;
-
-      if (imageFile) {
-        uploadedImage = await uploadToCloudinary(imageFile);
-      }
-
-      await setDoc(
-        doc(db, "userProfiles", user.uid),
-        {
-          fullName,
-          dob,
-          phone,
-          university,
-          faculty,
-          studentId,
-          bio: bio || "",
-          email,
-          imageUrl: uploadedImage || defaultImage,
-        },
-        { merge: true }
-      );
-
-      setSuccessMsg("Profile updated successfully ✅");
-      setImageFile(null);
-    } catch (err) {
-      console.log(err);
-      setErrorMsg("Something went wrong");
-    } finally {
-      setLoadingSubmit(false);
-    }
-  };
+  const avgRating = profile?.avgRating || 0;
+  const reviewCount = profile?.reviewCount || 0;
 
   return (
     <div className="profile-page">
-
-      {/* HEADER */}
-      <div className="profile-header">
-        <h2>Your Profile</h2>
-        <p>Update your personal information</p>
-      </div>
-
-      <div className="profile-card">
-
-        {/* IMAGE */}
-        <img
-          src={
-            imageFile
-              ? URL.createObjectURL(imageFile)
-              : imageUrl || defaultImage
-          }
-          alt="profile"
-          className="profile-image"
-        />
-
-        {/* UPLOAD */}
-        <div style={{ textAlign: "center", marginBottom: 15 }}>
-          <input
-            type="file"
-            id="upload"
-            hidden
-            onChange={(e) =>
-              setImageFile(e.target.files[0])
-            }
-          />
-
-          <label htmlFor="upload" className="save-btn">
-            Upload Photo
-          </label>
-        </div>
-
-        <form onSubmit={handleSubmit} className="profile-form">
-
-          <div className="grid-2">
-
-            <div className="field">
-              <label>Email</label>
-              <input value={email} readOnly />
-            </div>
-
-            <div className="field">
-              <label>Full Name</label>
-              <input
-                value={fullName}
-                onChange={(e) =>
-                  setFullName(e.target.value)
-                }
-              />
-            </div>
-
-            <div className="field">
-              <label>Phone</label>
-              <input
-                value={phone}
-                onChange={(e) =>
-                  setPhone(e.target.value)
-                }
-              />
-            </div>
-
-            <div className="field">
-              <label>Date of Birth</label>
-              <input
-                type="date"
-                value={dob}
-                onChange={(e) =>
-                  setDob(e.target.value)
-                }
-              />
-            </div>
-
-            <div className="field">
-              <label>Student ID</label>
-              <input
-                value={studentId}
-                onChange={(e) =>
-                  setStudentId(e.target.value)
-                }
-              />
-            </div>
-
-            {/* UNIVERSITY */}
-            <div className="field">
-              <label>University</label>
-              <select
-                value={university}
-                onChange={(e) => {
-                  setUniversity(e.target.value);
-                  setFaculty("");
-                }}
-              >
-                <option value="">Select university</option>
-
-                {Object.keys(universitiesData).map(
-                  (u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  )
-                )}
-              </select>
-            </div>
-
-            {/* FACULTY */}
-            <div className="field">
-              <label>Faculty</label>
-              <select
-                value={faculty}
-                disabled={!university}
-                onChange={(e) =>
-                  setFaculty(e.target.value)
-                }
-              >
-                <option value="">Select faculty</option>
-
-                {universitiesData[university]?.map(
-                  (f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  )
-                )}
-              </select>
-            </div>
-
-          </div>
-
-          <div className="field full">
-            <label>Bio</label>
-            <textarea
-              value={bio}
-              onChange={(e) =>
-                setBio(e.target.value)
-              }
+      {!editMode ? (
+        <div className="public-profile">
+          <div className="pub-header">
+            <img
+              src={imageUrl || DEFAULT_IMAGE}
+              className="pub-avatar"
+              alt="profile"
+              onError={(e) => (e.target.src = DEFAULT_IMAGE)}
             />
+            <div className="pub-info">
+              <h2>{profile?.fullName || "—"}</h2>
+              <p className="pub-uni">
+                {profile?.university}
+                {profile?.faculty && ` - ${profile.faculty}`}
+              </p>
+              {profile?.bio && <p className="pub-bio">{profile.bio}</p>}
+
+              {/* ── التقييم ── */}
+              <div className="pub-rating">
+                {reviewCount > 0 ? (
+                  <>
+                    <StarRating rating={avgRating} />
+                    <span className="rating-value">{avgRating.toFixed(1)}</span>
+                    <span className="rating-count">({reviewCount} تقييم)</span>
+                  </>
+                ) : (
+                  <span className="no-rating">لا يوجد تقييمات بعد</span>
+                )}
+              </div>
+
+              <p className="pub-date">عضو منذ {formatDate(profile?.createdAt)}</p>
+            </div>
+            <button className="edit-profile-btn" onClick={() => setEditMode(true)}>
+              ✏️ تعديل الملف الشخصي
+            </button>
           </div>
 
-          {errorMsg && (
-            <p className="error">{errorMsg}</p>
-          )}
-          {successMsg && (
-            <p className="success">{successMsg}</p>
-          )}
-
-          <button className="save-btn">
-            {loadingSubmit
-              ? "Saving..."
-              : "Save Changes"}
-          </button>
-
-        </form>
-      </div>
+          <div className="pub-products">
+            <h3>منتجاتي ({products.length})</h3>
+            <div className="pub-grid">
+              {products.map((p) => (
+                <div key={p.id} className="pub-card" onClick={() => navigate(`/product/${p.id}`)}>
+                  <img src={p.image || DEFAULT_IMAGE} alt={p.name} onError={(e) => (e.target.src = DEFAULT_IMAGE)} />
+                  <div className="pub-card-body">
+                    <h4>{p.name}</h4>
+                    <p>{p.price} EGP</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="profile-card">
+          <div className="profile-header">
+            <h2>تعديل الملف الشخصي</h2>
+            <button className="back-edit-btn" onClick={() => setEditMode(false)}>← رجوع</button>
+          </div>
+          <img
+            src={imageFile ? URL.createObjectURL(imageFile) : imageUrl || DEFAULT_IMAGE}
+            alt="profile"
+            className="profile-image"
+          />
+          <div style={{ textAlign: "center", marginBottom: 15 }}>
+            <input type="file" id="upload" hidden onChange={(e) => setImageFile(e.target.files[0])} />
+            <label htmlFor="upload" className="save-btn">Upload Photo</label>
+          </div>
+          <div className="profile-form">
+            <div className="grid-2">
+              <div className="field"><label>Full Name</label><input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
+              <div className="field"><label>Phone</label><input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+              <div className="field"><label>Student ID</label><input value={studentId} onChange={(e) => setStudentId(e.target.value)} /></div>
+              <div className="field"><label>University</label><input value={university} onChange={(e) => setUniversity(e.target.value)} /></div>
+              <div className="field"><label>Faculty</label><input value={faculty} onChange={(e) => setFaculty(e.target.value)} /></div>
+            </div>
+            <div className="field full"><label>Bio</label><textarea value={bio} onChange={(e) => setBio(e.target.value)} /></div>
+            {successMsg && <p className="success">{successMsg}</p>}
+            <button className="save-btn" onClick={handleSave}>{loadingSubmit ? "Saving..." : "Save Changes"}</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

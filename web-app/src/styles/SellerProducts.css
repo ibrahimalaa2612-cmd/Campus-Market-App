@@ -1,4 +1,166 @@
-/* Grid */
+/* ========== SELLER HEADER ========== */
+.product-page-container {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 15px;
+  font-family: system-ui, Arial;
+}
+
+.sp-header {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+  margin-bottom: 20px;
+}
+
+.sp-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ff6f00;
+  flex-shrink: 0;
+}
+
+.sp-info { flex: 1; }
+
+.sp-name {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  color: #1e293b;
+}
+
+.sp-meta {
+  font-size: 13px;
+  color: #777;
+  margin: 2px 0;
+}
+
+.sp-stars {
+  display: flex;
+  gap: 3px;
+  direction: ltr;
+}
+
+.sp-star { font-size: 18px; color: #d1d5db; }
+.sp-star.filled { color: #f59e0b; }
+
+.sp-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.sp-rating-text {
+  font-size: 13px;
+  color: #555;
+  font-weight: 600;
+}
+
+.sp-stats {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.sp-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 8px 16px;
+}
+
+.sp-stat-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ff6f00;
+}
+
+.sp-stat-label {
+  font-size: 11px;
+  color: #777;
+}
+
+/* ========== TABS ========== */
+.sp-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.sp-tab {
+  padding: 10px 18px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #777;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: 0.2s;
+}
+
+.sp-tab.active {
+  color: #ff6f00;
+  border-bottom-color: #ff6f00;
+}
+
+.sp-empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 30px;
+  font-size: 15px;
+}
+
+/* ========== REVIEWS ========== */
+.sp-reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-review-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid #eee;
+}
+
+.sp-review-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sp-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sp-review-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+/* ========== GRID ========== */
 .seller-products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -6,7 +168,6 @@
   margin-top: 20px;
 }
 
-/* Product Card */
 .seller-product-card {
   background-color: #1e293b;
   border-radius: 12px;
@@ -22,9 +183,7 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
 
-.image-wrapper {
-  position: relative;
-}
+.image-wrapper { position: relative; }
 
 .seller-product-card img {
   width: 100%;
@@ -33,7 +192,6 @@
   border-radius: 8px;
 }
 
-/* Badge “تم البيع” على الصورة */
 .sold-badge-card {
   position: absolute;
   top: 8px;
@@ -46,36 +204,36 @@
   font-weight: bold;
 }
 
-/* Product Info */
 .seller-product-card h3 {
   font-size: 1rem;
   margin: 8px 0;
-  color: var(--highlight-color);
+  color: #f8fafc;
 }
 
 .seller-product-card p {
   font-size: 0.9rem;
-  color: var(--subtext-color);
+  color: #94a3b8;
   margin-bottom: 5px;
 }
 
-/* Responsive */
-@media screen and (max-width: 768px) {
+/* ========== RESPONSIVE ========== */
+@media (max-width: 600px) {
+  .sp-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .sp-stats { justify-content: center; }
+  .sp-tabs { overflow-x: auto; }
   .seller-products-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
-
-  .seller-product-card img {
-    height: 120px;
-  }
+  .seller-product-card img { height: 120px; }
 }
 
-@media screen and (max-width: 480px) {
+@media (max-width: 480px) {
   .seller-products-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
-
-  .seller-product-card img {
-    height: 100px;
-  }
+  .seller-product-card img { height: 100px; }
 }
